@@ -226,6 +226,12 @@ Nature_Lexeme identificateur(char *chaine){
     return PARO;
   else IF_IDF("end")
     return PARF;
+  else IF_IDF("if")
+	 return IF;
+  else IF_IDF("then")
+	 return THEN;
+  else IF_IDF("else")
+	 return ELSE;
   else
     return VAR;
 }
@@ -247,6 +253,8 @@ Nature_Lexeme symb_to_lex(char *chaine){
 		return PARO;
 	else IF_IDF("=")
 		return EQUAL;
+	else IF_IDF("==")
+	       return EQUALITY;
 	else IF_IDF(">")
 		return GREATER_THAN;
 	else IF_IDF("<")
