@@ -46,9 +46,9 @@ comparaison -> expression op_compar expression
 op_compar -> EQUALITY
 	  -> INEQUALITY
 	  -> GREATER THAN
-	  -> LESS THAN
-	  -> less OR EQUAL
-	  ->GREAT OR EQUAL 
+	  -> LOWER THAN
+	  -> LOWER OR EQUAL
+	  ->GREATER OR EQUAL 
 
 
 let a = 3;;
