@@ -6,8 +6,7 @@ expression -> valeur
 //Plus tard-> expression suite_expression  // expression , expresion
 
 
-valeur     -> identificateur	//Nom de variable
-	   -> constante		//Valeur constante
+valeur    	-> identificateur	//Nom de variabl
 	   
 suite_expression -> SEPARATOR expression
 		 -> eps
@@ -16,10 +15,6 @@ param		 -> eps
 		 -> identificateur suite_param
 
 identificateur -> nom_var param
-
-constante      -> FLOAT
-	       -> INT
-	       -> STRING
 
 affectation    -> LET affect_solo suite_affect_solo IN expr
 
