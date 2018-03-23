@@ -32,6 +32,7 @@ int est_separateur(char c ) ;
 int est_chiffre(char c ) ;
 int est_symbole(char c ) ;
 void reconnaitre_lexeme();
+
 Nature_Lexeme symb_to_lex(char *chaine);
 Nature_Lexeme identificateur(char *chaine);
 /* --------------------------------------------------------------------- */
@@ -119,7 +120,7 @@ void reconnaitre_lexeme() {
 				  }
 				  //Reconnaissance opérateur symbole
 				  else if  (est_symbole(caractere_courant())) {
-					  avancer_car();
+				    lexeme_en_cours.chaine[0] = '\0';
 					  while (est_symbole(caractere_courant()) ){
 						  ajouter_caractere( lexeme_en_cours.chaine, caractere_courant() );
 						  avancer_car();
@@ -198,15 +199,15 @@ car:
 
 /* --------------------------------------------------------------------- */
 
-#define IF_IDF(x) strcmp(chaine,x) == 0)
+#define IF_IDF(x) if (strcmp(chaine,x) == 0)
 
 Nature_Lexeme identificateur(char *chaine){
   IF_IDF("let")
     return LET;
   else IF_IDF("and")
     return AND;
-	else IF_IDF("or")
-		return LOGIC_OR;
+  else IF_IDF("or")
+    return LOGIC_OR;
   else IF_IDF(":bool")
     return TYPE;
   else IF_IDF(":int")
@@ -228,31 +229,31 @@ Nature_Lexeme identificateur(char *chaine){
 }
 
 Nature_Lexeme symb_to_lex(char *chaine){
-	IF_IDF('+')
+	IF_IDF("+")
 		return PLUS;
-	else IF_IDF('-')
+	else IF_IDF("-")
 		return MOINS;
-	else IF_IDF('*')
+	else IF_IDF("*")
 		return MUL;
-	else IF_IDF('/')
+	else IF_IDF("/")
 		return DIV;
-	else IF_IDF('&')
+	else IF_IDF("&")
 		return LOGIC_AND;
-	else IF_IDF(')')
+	else IF_IDF(")")
 		return PARF;
-	else IF_IDF('(')
+	else IF_IDF("(")
 		return PARO;
-	else IF_IDF('=')
+	else IF_IDF("=")
 		return EQUAL;
-	else IF_IDF('>')
+	else IF_IDF(">")
 		return GREATER_THAN;
-	else IF_IDF('<')
+	else IF_IDF("<")
 		return LOWER_THAN;
-	else IF_IDF('>=')
+	else IF_IDF(">=")
 		return GREATER_OR_EQUAL;
-	else IF_IDF('<=')
+	else IF_IDF("<=")
 		return LOWER_OR_EQUAL;
-	else IF_IDF('!=')
+	else IF_IDF("!=")
 		return INEQUALITY;
 	else
 		return ERREUR;
@@ -299,9 +300,9 @@ int est_symbole(char c)  {
 		case '!':
 		case '&':
 		case '|':
-			return 1;
+		  return 1;
 		default:
-    	return 0;
+		  return 0;
   } 
 }
 
@@ -310,13 +311,12 @@ int est_symbole(char c)  {
 // renvoie la chaine de caracteres correspondant a la nature du lexeme
 
 #define LEX_NAT_CHN(x) case x: return #x
-#define 
 
 char *Nature_vers_Chaine (Nature_Lexeme nature) {
 	switch (nature) {
-			LEX_NAT_CHN(PLUS);             // +
-			LEX_NAT_CHN(MOINS);            // -
-			LEX_NAT_CHN(MUL);		           // *
+		LEX_NAT_CHN(PLUS);             // +
+	      	LEX_NAT_CHN(MOINS);            // -
+       		LEX_NAT_CHN(MUL);	       // *
   		LEX_NAT_CHN(DIV);              // /
   
   //Logic op
@@ -328,9 +328,9 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
   		LEX_NAT_CHN(EQUALITY);
   		LEX_NAT_CHN(INEQUALITY);
   		LEX_NAT_CHN(GREATER_THAN);
-  		LEX_NAT_CHN(LESS_THAN);
-  		LEX_NAT_CHN(GREAT_OR_EQUAL);
-  		LEX_NAT_CHN(LESS_OR_EQUAL);
+  		LEX_NAT_CHN(LOWER_THAN);
+  		LEX_NAT_CHN(GREATER_OR_EQUAL);
+  		LEX_NAT_CHN(LOWER_OR_EQUAL);
   
   //Delimiters
   		LEX_NAT_CHN(PARO);    //(
@@ -343,7 +343,7 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
   		LEX_NAT_CHN(EQUAL); //=
   		LEX_NAT_CHN(IF);
   		LEX_NAT_CHN(THEN);
-  		LEX_NAT(ELSE);
+  		LEX_NAT_CHN(ELSE);
   
   //Data types
   		LEX_NAT_CHN(VAR); //Variable
@@ -352,8 +352,8 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
   		LEX_NAT_CHN(NUM);// sequence de chiffres
   
   //control lex
-			LEX_NAT_CHN(FIN_INSTR); //;;
-			LEX_NAT_CHN(FIN_SEQUENCE);
+		LEX_NAT_CHN(FIN_INSTR); //;;
+	       	LEX_NAT_CHN(FIN_SEQUENCE);
 			default: return "ERREUR" ;
   }
 } 
