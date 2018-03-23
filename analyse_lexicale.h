@@ -13,21 +13,46 @@
 ------------------------------------------------------------------------ */
 
 typedef enum {
+  //Arithmetic op
   PLUS,             // +
   MOINS,            // -
   MUL,              // *
   DIV,              // /
-  ERREUR,
+  
+  //Logic op
+  LOGIC_AND,
+  LOGIC_OR,
+  NOT,
+  
+  //Comparison ops
+  EQUALITY,
+  INEQUALITY,
+  GREATER_THAN,
+  LESS_THAN,
+  GREAT_OR_EQUAL,
+  LESS_OR_EQUAL,
+  
+  //Delimiters
   PARO,    //(
   PARF,    //)
-  VAR, //Variable
+  
+  //Various
   LET, //let
   AND, //and
   IN,// in
-  FUNCTION, //fonction
   EQUAL, //=
+  IF,
+  THEN,
+  ELSE,
+  
+  //Data types
+  VAR, //Variable
+  FUNCTION, //fonction
   TYPE, //Data type
   NUM,// sequence de chiffres
+  
+  //control lex
+  ERREUR,
   FIN_INSTR, //;;
   FIN_SEQUENCE
 } Nature_Lexeme ;
