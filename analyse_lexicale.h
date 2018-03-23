@@ -28,9 +28,9 @@ typedef enum {
   EQUALITY,
   INEQUALITY,
   GREATER_THAN,
-  LESS_THAN,
-  GREAT_OR_EQUAL,
-  LESS_OR_EQUAL,
+  LOWER_THAN,
+  GREATER_OR_EQUAL,
+  LOWER_OR_EQUAL,
   
   //Delimiters
   PARO,    //(
