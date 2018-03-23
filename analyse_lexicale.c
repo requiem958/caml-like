@@ -146,9 +146,9 @@ void reconnaitre_lexeme() {
 					  goto car;
 				  }
 			  }
-			  avancer_car() ;
 			  break ;
 		  case E_ENTIER:
+		    avancer_car();
 			  lexeme_en_cours.type = INT;
 			  if (!est_chiffre(caractere_courant()) && !(caractere_courant()=='.'))
 				  etat=E_FIN;
@@ -167,6 +167,7 @@ void reconnaitre_lexeme() {
 			  }
 			  break;
 		  case E_FLOAT:
+		    avancer_car();
 			  lexeme_en_cours.type = FLOAT;
 			  if (est_chiffre(caractere_courant())){
 				  lexeme_en_cours.valeur.val_f += (caractere_courant() -'0')*exp;
@@ -183,6 +184,7 @@ car:
 			  etat = E_FIN;
 			  break;
 		  case E_FIN_INSTR: //On ne considère plus rien après ;; (ocaml sur turing)
+		    avancer_car();
 			  ajouter_caractere (lexeme_en_cours.chaine, caractere_courant()) ;
 			  if (strcmp(lexeme_en_cours.chaine, ";;") != 0 )
 				  lexeme_en_cours.nature = ERREUR;
