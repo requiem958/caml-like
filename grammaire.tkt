@@ -1,0 +1,58 @@
+
+expression -> valeur
+	   -> affectation	//let 
+	   -> operation		// operation de valeur
+	   -> condition		// if then else 
+//Plus tard-> expression suite_expression  // expression , expresion
+
+
+valeur     -> identificateur	//Nom de variable
+	   -> constante		//Valeur constante
+	   
+suite_expression -> SEPARATOR expression
+		 -> eps
+
+param		 -> eps
+		 -> identificateur suite_param
+
+identificateur -> nom_var param
+
+constante      -> FLOAT
+	       -> INT
+	       -> STRING
+
+affectation    -> LET affect_solo suite_affect_solo IN expr
+
+affect_solo    -> nom_var EQUAL expression
+
+suite_affect_solo -> eps
+		  -> AND affect_solo suite_affect_solo
+
+operation -> op_unaire expression
+	  -> expression op_binaire expression
+
+condition -> IF seq_comparaison THEN expression suite_condition
+suite_condition -> eps
+		-> ELSE expression
+
+seq_comparaison    -> comparaison suite_comparaison
+
+suite_comparaison  -> op_logique comparaison suite_comparaison
+		   -> eps
+
+op_logique	   -> OR
+		   -> AND
+		   
+comparaison -> expression op_compar expression
+	    -> NOT PARO expression op_compar expression PARF
+	    
+op_compar -> EQUALITY
+	  -> INEQUALITY
+	  -> GREATER THAN
+	  -> LESS THAN
+	  -> less OR EQUAL
+	  ->GREAT OR EQUAL 
+
+
+let a = 3;;
+let a = 3 in expr;;
