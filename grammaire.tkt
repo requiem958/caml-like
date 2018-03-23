@@ -23,8 +23,10 @@ affect_solo    -> nom_var EQUAL expression
 suite_affect_solo -> eps
 		  -> AND affect_solo suite_affect_solo
 
-operation -> op_unaire expression
-	  -> expression op_binaire expression
+operation -> eag avec modification pour ajouter fonction et variable 
+
+suite_op -> op_binaire expression
+
 
 condition -> IF seq_comparaison THEN expression suite_condition
 suite_condition -> eps
