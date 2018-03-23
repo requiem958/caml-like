@@ -42,6 +42,207 @@ void analyser(char *nom_fichier, Ast* A1){
   arreter();
 }
 
+err_syntax expression (lexeme l,AST A1){
+	
+	if (valeur(l,A1)==NOERR)
+		return NOERR;
+	else if (affection (l,A1)==NOERR)
+		return NOERR;
+	else if (operation(l,A1)==NOERR)
+		return NOERR;
+	else if (condition(l,A1)==NOERR)
+		return NOERR;
+	 show_user_err(ERR_EXPR,l);
+	return ERR_EXPR;
+	
+}
+
+err_syntax valeur (lexeme l,AST A1){
+	if ( l.nature == VAR)
+		return NOERR;
+	show_user_err(ERR_VAL,l);
+	return ERR_VAL;		
+}
+
+err_syntax affectation (lexeme l, AST A1) {
+	if (l.nature != LET ) {
+		show_user_err(ERR_AFF,l);
+		return ERR_AFF;
+	}
+	avancer();
+	l=lexeme_courant();
+	if (affect_solo(l,A1) != NOERR ) {
+		show_user_err(ERR_AFF,l);
+		return ERR_AFF;
+	}
+	avancer();
+	l=lexeme_courant();
+	if (suite_affect_solo (l,A1) != NOERR ) {
+		show_user_err(ERR_AFF,l);
+		return ERR_AFF;
+	}
+	avancer();
+	l=lexeme_courant();
+	if (l.nature != IN ) {
+		show_user_err(ERR_AFF,l);
+		return ERR_AFF;
+	}
+	avancer();
+	l=lexeme_courant();
+	if (expression(l,A1) != NOERR ) {
+		show_user_err(ERR_AFF,l);
+		return ERR_AFF;
+	}	
+}
+
+err_syntax affect_solo (lexeme l , AST A1){
+	if (l.nature != VAR){
+		show_user_err(ERR_AFFS,l);
+		return ERR_AFFS;
+	}
+		avancer();
+	l=lexeme_courant();
+	if (l.nature != EQUAL) {
+		show_user_err(ERR_AFFS,l);
+		return ERR_AFFS;
+	}
+		avancer();
+	l=lexeme_courant();
+	if (expression(l,A1) != NOERR) {
+		show_user_err(ERR_AFFS,l);
+		return ERR_AFFS;
+	}
+	return NOERR;
+}
+
+err_syntax suite_affect_solo (lexeme l, AST A1){
+	if (l.nature != AND)
+		return NOERR;
+	avancer();
+	l=lexeme_courant();
+	if (affect_solo(l,A1) != NOERR ) {
+		show_user_err(ERR_SAFFS,l);
+		return ERR_SAFFS;
+	}
+	avancer();
+	l=lexeme_courant();
+	if (suite_affect_solo (l,A1) != NOERR ) {
+		show_user_err(ERR_AFF,l);
+		return ERR_AFF;
+	}
+	return NOERR;
+}
+
+err_syntax operation (lexeme l ,AST A1) {	//eag avec variable + fonction à faire
+	
+}
+
+err_syntax condition (lexeme l , AST A1 ) {
+	if (l.nature != IF ){
+		show_user_err(ERR_COND,l);
+		return ERR_COND;
+	}
+	avancer();
+	l=lexeme_courant();
+	if(seq_comparaison(l,A1) != NOERR) {
+		show_user_err(ERR_COND,l);
+		return ERR_COND;
+	}
+	avancer();
+	l=lexeme_courant();
+	if (l.nature != THEN ){
+		show_user_err(ERR_COND,l);
+		return ERR_COND;
+	}
+	avancer();
+	l=lexeme_courant();
+	if(expression(l,A1) != NOERR) {
+		show_user_err(ERR_COND,l);
+		return ERR_COND;
+	}
+	avancer();
+	l=lexeme_courant();	
+	if(suite_condition(l,A1) != NOERR) {
+		show_user_err(ERR_COND,l);
+		return ERR_COND;
+	}
+	return NOERR;
+}
+
+err_syntax seq_comparaison (lexeme l,AST A1){
+	if (comparaison(l,A1)!= NOERR){
+		show_user_err(ERR_SCOMP,l);
+		return ERR_SCOMP;
+	}
+	avancer();
+	l=lexeme_courant();
+	if (suite_comparaison (l,A1)!= NOERR){
+		show_user_err(ERR_SCOMP,l);
+		return ERR_SCOMP;
+	}
+	return NOERR;	
+}
+
+err_syntax comparaison (lexeme l , AST A1){
+	if(expression(l,A1) == NOERR) {
+		avancer();
+		l=lexeme_courant();
+		if (op_compar(l,A1) != NOERR){
+			show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+		}
+		avancer();
+		l=lexeme_courant();
+		if(expression(l,A1) != NOERR) {
+			show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+		}
+		return NOERR;
+	}
+	else if( l.nature == NOT){
+		avancer();
+		l=lexeme_courant();
+		if( l.nature != PARO){
+			show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+		}
+		avancer();
+		l=lexeme_courant();
+		if(expression(l,A1) != NOERR) {
+			show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+		}
+		avancer();
+		l=lexeme_courant();
+		if (op_compar(l,A1) != NOERR){
+			show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+		}
+		avancer();
+		l=lexeme_courant();
+		if(expression(l,A1) != NOERR) {
+			show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+		}
+		avancer();
+		l=lexeme_courant();
+		if( l.nature != PARF){
+			show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+		}
+		return NOERR;
+	}
+		show_user_err(ERR_COMP,l);
+			return ERR_COMP;
+						
+}
+
+err_syntax suite_comparaison (lexeme l , AST A1){
+	
+}
+
+
+
 err_syntax eag(Lexeme l, Ast* A1){
   return sterme(l,A1);
 }
@@ -436,7 +637,6 @@ err_syntax init (Lexeme l,Ast* A1){
     show_user_err(e,l);
     return ERR_INIT;
   }
-  //avancer();
   l = lexeme_courant();
   e = type(l,A1);
   if (e != NOERR){
