@@ -32,23 +32,26 @@ condition -> IF seq_comparaison THEN expression suite_condition
 suite_condition -> eps
 		-> ELSE expression
 
-seq_comparaison    -> comparaison suite_comparaison
-
+seq_comparaison    ->comparaison suite_comparaison
+		   ->PARO  comparaison PARF suite_comparaison
+		   
+comparaison -> (expression op_compar expression)
+	    -> NOT PARO expression op_compar expression PARF
+	    
 suite_comparaison  -> op_logique comparaison suite_comparaison
+		   ->op_logique PARO comparaison PARF suite_comparaison
 		   -> eps
 
 op_logique	   -> OR
 		   -> AND
 		   
-comparaison -> expression op_compar expression
-	    -> NOT PARO expression op_compar expression PARF
 	    
 op_compar -> EQUALITY
 	  -> INEQUALITY
 	  -> GREATER THAN
 	  -> LOWER THAN
 	  -> LOWER OR EQUAL
-	  ->GREATER OR EQUAL 
+	  -> GREATER OR EQUAL 
 
 
 let a = 3;;
