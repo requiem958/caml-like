@@ -1,20 +1,55 @@
+//Definition de la grammaire syntaxique d'un programme CAML
 
-expression -> valeur
-	   -> affectation	//let 
-	   -> operation		// operation de valeur
-	   -> condition		// if then else 
-//Plus tard-> expression suite_expression  // expression , expresion
+//Lexemes terminaux en MAJUSCULES:
+
+//Lexemes de controles
+FIN_PRG:  ;;
+FIN_EXPR: ;
+
+//Lexemes de mots clés
+LET:	  let
+AND:	  and
+IN:	  in
+IF:	  if
+ELSE:	  else
+THEN:	  then
+BEGIN:	  begin
+END:	  end
+PARO:	  (
+PARF:	  )
+
+//Lexemes d'opérateurs
+EQUAL:	  =
+NOT:	  !
+LOGIC_AND:	&
+LOGIC_OR: 	or
+GREATER_THAN:	>
+LOWER_THAN:	<
+EQUALITY:	==
+INEQUALITY:	!=
+GREATER_OR_EQUAL:	>=
+LOWER_OR_EQUAL:		<=
+
+//Grammaire
+programme	-> seq_expression FIN_PRG
+
+seq_expression 	-> expression s_expression
+
+s_expression 	-> eps
+		-> FIN_EXPR expression s_expression
+
+expression 	-> valeur
+	   	-> affectation		//let 
+	   	-> operation		// operation de valeur
+	   	-> condition		// if then else 
 
 
 valeur    	-> identificateur	//Nom de variabl
-	   
-suite_expression -> SEPARATOR expression
-		 -> eps
 
 param		 -> eps
 		 -> identificateur suite_param
 
-identificateur -> nom_var param
+identificateur -> nom_var seq_param
 
 affectation    -> LET affect_solo suite_affect_solo IN expr
 
@@ -39,20 +74,16 @@ comparaison -> (expression op_compar expression)
 	    -> NOT PARO expression op_compar expression PARF
 	    
 suite_comparaison  -> op_logique comparaison suite_comparaison
-		   ->op_logique PARO comparaison PARF suite_comparaison
+		   -> op_logique PARO comparaison PARF suite_comparaison
 		   -> eps
 
-op_logique	   -> OR
-		   -> AND
+op_logique	   -> LOGIC_OR
+		   -> LOGIC_AND
 		   
 	    
 op_compar -> EQUALITY
 	  -> INEQUALITY
-	  -> GREATER THAN
-	  -> LOWER THAN
-	  -> LOWER OR EQUAL
-	  -> GREATER OR EQUAL 
-
-
-let a = 3;;
-let a = 3 in expr;;
+	  -> GREATER_THAN
+	  -> LOWER_THAN
+	  -> LOWER_OR_EQUAL
+	  -> GREATER_OR_EQUAL 
