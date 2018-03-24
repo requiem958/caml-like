@@ -30,45 +30,82 @@ INEQUALITY:	!=
 GREATER_OR_EQUAL:	>=
 LOWER_OR_EQUAL:		<=
 
-//Grammaire
+//Grammaire par ordre d'évaluation (a peu près)
+
+//Axiome
 programme	-> seq_expression FIN_PRG
 
+//Une multitude d'expression
 seq_expression 	-> expression s_expression
 
+//Chaque expression est séparée par une FIN_EXPR
 s_expression 	-> eps
 		-> FIN_EXPR expression s_expression
 
+//Une expression seule
 expression 	-> valeur
 	   	-> affectation		//let 
 	   	-> operation		// operation de valeur
 	   	-> condition		// if then else 
 
 
-valeur    	-> identificateur	//Nom de variabl
+valeur    	-> identificateur	//Nom de variable
 
-param		 -> eps
-		 -> identificateur suite_param
+//Nom de variable ou appel de fonction
+identificateur	  -> constant
+		  -> nom_var seq_param
 
-identificateur -> nom_var seq_param
+seq_param	  -> param ss_param
 
-affectation    -> LET affect_solo suite_affect_solo IN expr
+s_param		  -> eps
+		  -> param ss_param
 
-affect_solo    -> nom_var EQUAL expression
+param		  -> nom_var
+		  -> constant
 
-suite_affect_solo -> eps
-		  -> AND affect_solo suite_affect_solo
+nom_var		  -> chaine de caractères commençant par une lettre
 
-operation -> eag avec modification pour ajouter fonction et variable 
+//Affectation : let <var> = <expr> [and <var> = <expr> ...] in <expr>
 
-suite_op -> op_binaire expression
+affectation   -> LET seq_affect IN expr
 
+seq_affect    -> affect ss_affect
+
+ss_affect     -> eps
+	      -> AND affect ss_affect
+
+affect	      -> object EQUAL expression
+
+object	      -> nom_var seq_fparam
+
+seq_fparam    -> fparam ss_fparam
+
+ss_fparam     -> eps
+	      -> fparam ss_fparam
+
+fparam	      -> nom_var
+
+//Opérations (EAG modifiées
+
+operation    -> seq_terme
+seq_terme    -> terme ss_terme
+ss_terme     -> eps
+	     -> op1 terme ss_terme
+
+terme	     -> seq_facteur
+seq_facteur  -> facteur ss_facteur
+ss_facteur   -> eps
+	     -> op2 facteur ss_facteur
+facteur	     -> identificateur
+
+//Conditions
 
 condition -> IF seq_comparaison THEN expression suite_condition
 suite_condition -> eps
 		-> ELSE expression
 
 seq_comparaison    ->comparaison suite_comparaison
-		   ->PARO  comparaison PARF suite_comparaison
+		   ->PARO comparaison PARF suite_comparaison
 		   
 comparaison -> (expression op_compar expression)
 	    -> NOT PARO expression op_compar expression PARF
