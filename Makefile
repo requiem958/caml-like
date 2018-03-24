@@ -1,45 +1,50 @@
-all: test_syntaxe test_lexeme
+BUILD_REP=build/
+CC=gcc
+DEBUG=-g
+CFLAGS=-Wall -Wextra -Werror
+
+all: $(BUILD_REP)/test_syntaxe $(BUILD_REP)/test_lexeme
+
 
 #EXEC
 
-test_lexeme: analyse_lexicale.o  lecture_caracteres.o  test_lexeme.o
-	gcc -g -Wall -o test_lexeme analyse_lexicale.o  lecture_caracteres.o  test_lexeme.o
+$(BUILD_REP)/test_lexeme: analyse_lexicale.o  lecture_caracteres.o  test_lexeme.o
+	$(CC) $(DEBUG) $(CFLAGS) -o $@ $^
 
-test_syntaxe: analyse_lexicale.o analyse_syntaxique.o lecture_caracteres.o test_syntaxe.o ast_parcours.o ast_construction.o
-	gcc -g -Wall -o $@ $^
+$(BUILD_REP)/test_syntaxe: analyse_lexicale.o analyse_syntaxique.o lecture_caracteres.o test_syntaxe.o ast_parcours.o ast_construction.o
+	$(CC) $(DEBUG) $(CFLAGS) -o $@ $^
 
 essai_ast: ast_construction.o ast_parcours.o essai_ast.o
-	gcc -g -Wall -o $@ $^
+	$(CC) $(DEBUG) $(CFLAGS) -o $@ $^
 
 #OBJ_LINK
 
-analyse_lexicale.o: analyse_lexicale.c analyse_lexicale.h lecture_caracteres.h
-	gcc -g -Wall -c analyse_lexicale.c
-
-lecture_caracteres.o: lecture_caracteres.h lecture_caracteres.c
-	gcc -g -Wall -c lecture_caracteres.c
-
-analyse_syntaxique.o: lecture_caracteres.h analyse_lexicale.h analyse_syntaxique.h analyse_syntaxique.c
-	gcc -g -Wall -c analyse_syntaxique.c
+lecture_caracteres.o: lecture_caracteres.c lecture_caracteres.h
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 ast_parcours.o:ast_parcours.c ast_parcours.h type_ast.h
-	gcc -g -Wall -c ast_parcours.c
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 ast_construction.o: ast_construction.c ast_construction.h type_ast.h
-	gcc -g -Wall -c ast_construction.c
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
+analyse_lexicale.o: analyse_lexicale.c analyse_lexicale.h lecture_caracteres.h grammaire.tkt
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
+
+analyse_syntaxique.o: analyse_syntaxique.c lecture_caracteres.h analyse_lexicale.h analyse_syntaxique.h ast_construction.h type_ast.h grammaire.tkt
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 #OBJ_EXEC
 
 
 test_lexeme.o: analyse_lexicale.h test_lexeme.c
-	gcc -g -Wall -c test_lexeme.c
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
-test_syntaxe.o: analyse_syntaxique.h analyse_lexicale.h lecture_caracteres.h type_ast.h test_syntaxe.c
-	gcc -g -Wall -c test_syntaxe.c
+test_syntaxe.o: test_syntaxe.c analyse_syntaxique.h analyse_lexicale.h lecture_caracteres.h ast_parcours.h ast_construction.h type_ast.h
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
-essai_ast.o: ast_construction.h ast_parcours.h type_ast.h essai_ast.c
-	gcc -g -Wall -c essai_ast.c
+essai_ast.o: essai_ast.c ast_construction.h ast_parcours.h type_ast.h
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 clean:
 	rm -f  test_lexeme test_syntaxe essai_ast *.o *~
