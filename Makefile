@@ -1,10 +1,12 @@
-BUILD_REP=build/
+BUILD_REP=build
 CC=gcc
 DEBUG=-g
 CFLAGS=-Wall -Wextra -Werror
 
-all: $(BUILD_REP)/test_syntaxe $(BUILD_REP)/test_lexeme
+all: test_lex test_syn
 
+test_lex: $(BUILD_REP)/test_lexeme
+test_syn: $(BUILD_REP)/test_syntaxe
 
 #EXEC
 
@@ -37,7 +39,7 @@ analyse_syntaxique.o: analyse_syntaxique.c lecture_caracteres.h analyse_lexicale
 #OBJ_EXEC
 
 
-test_lexeme.o: analyse_lexicale.h test_lexeme.c
+test_lexeme.o: test_lexeme.c analyse_lexicale.h 
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 test_syntaxe.o: test_syntaxe.c analyse_syntaxique.h analyse_lexicale.h lecture_caracteres.h ast_parcours.h ast_construction.h type_ast.h
@@ -47,4 +49,4 @@ essai_ast.o: essai_ast.c ast_construction.h ast_parcours.h type_ast.h
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 clean:
-	rm -f  test_lexeme test_syntaxe essai_ast *.o *~
+	rm -f  $(BUILD_REP)/test_lexeme $(BUILD_REP)/test_syntaxe essai_ast *.o *.gch *~
