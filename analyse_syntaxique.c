@@ -7,25 +7,55 @@
 #include <string.h>
 
 //Private functions
-static err_syntax let (Lexeme l,Ast* A1);
+
+//General program functions
+
+/* Reconnait un programme CAML */
 static err_syntax prg (Lexeme l,Ast* A1);
-static err_syntax fin_instr(Lexeme l, Ast* A1);
+
+/* Enlever les lexemes de types ERREUR à la fin du programme */
+static err_syntax fin(Lexeme l);
+
+//CAML expressions
+
+/* Reconnaitre une expression (grammaire.tkt)*/
+static err_syntax expression (Lexeme l,Ast* A1);
+
 static err_syntax instr (Lexeme l,Ast* A1);
-static err_syntax suite_init (Lexeme l,Ast* A1);
+static err_syntax fin_instr(Lexeme l, Ast* A1);
+
+//instructions functions
+static err_syntax let (Lexeme l,Ast* A1);
 static err_syntax init (Lexeme l,Ast* A1);
+static err_syntax suite_init (Lexeme l,Ast* A1);
+static err_syntax type(Lexem l,Ast* A1);
+static err_syntax valeur (Lexeme l,Ast A1);
 static err_syntax type (Lexeme l,Ast* A1);
+
+//logic expr functions
+
+//eag functions
 static err_syntax eag(Lexeme l, Ast* A1);
-static err_syntax sterme(Lexeme l,Ast* A2);
-static err_syntax ssterme(Lexeme l,Ast* A2, Ast A1);
-static err_syntax terme (Lexeme l,Ast* A1);
-static err_syntax sfacteur (Lexeme l,Ast* A2);
-static err_syntax ssfacteur (Lexeme l,Ast* A2, Ast A1);
-static err_syntax facteur  (Lexeme l,Ast* A1);
+
+//arithmetic op
 static err_syntax op1 (Lexeme l,TypeOperateur*t);
 static err_syntax op2 (Lexeme l,TypeOperateur*t);
 static err_syntax opunaire (Lexeme l,Ast* A1, char is_minus);
-static err_syntax fin(Lexeme l);
+
+//Termes : a + b
+static err_syntax terme (Lexeme l,Ast* A1);
+static err_syntax sterme(Lexeme l,Ast* A2);
+static err_syntax ssterme(Lexeme l,Ast* A2, Ast A1);
+
+//Facteurs : a * b
+static err_syntax facteur  (Lexeme l,Ast*A1);
+static err_syntax sfacteur (Lexeme l,Ast* A2);
+static err_syntax ssfacteur (Lexeme l,Ast* A2, Ast A1);
+
+//
 static err_syntax test_op2 (Lexeme l,TypeOperateur *t);
+
+//Error control functions
 static void print_err(err_syntax e);
 static void show_user_err(const err_syntax current, const Lexeme l);
 
@@ -42,7 +72,7 @@ void analyser(char *nom_fichier, Ast* A1){
   arreter();
 }
 
-err_syntax expression (lexeme l,AST A1){
+err_syntax expression (Lexeme l,Ast A1){
 	
 	if (valeur(l,A1)==NOERR)
 		return NOERR;
@@ -57,14 +87,14 @@ err_syntax expression (lexeme l,AST A1){
 	
 }
 
-err_syntax valeur (lexeme l,AST A1){
+err_syntax valeur (Lexeme l,Ast A1){
 	if ( l.nature == VAR)
 		return NOERR;
 	show_user_err(ERR_VAL,l);
 	return ERR_VAL;		
 }
 
-err_syntax affectation (lexeme l, AST A1) {
+err_syntax affectation (Lexeme l, Ast A1) {
 	if (l.nature != LET ) {
 		show_user_err(ERR_AFF,l);
 		return ERR_AFF;
@@ -95,7 +125,7 @@ err_syntax affectation (lexeme l, AST A1) {
 	}	
 }
 
-err_syntax affect_solo (lexeme l , AST A1){
+err_syntax affect_solo (Lexeme l , Ast A1){
 	if (l.nature != VAR){
 		show_user_err(ERR_AFFS,l);
 		return ERR_AFFS;
@@ -115,7 +145,7 @@ err_syntax affect_solo (lexeme l , AST A1){
 	return NOERR;
 }
 
-err_syntax suite_affect_solo (lexeme l, AST A1){
+err_syntax suite_affect_solo (Lexeme l, Ast A1){
 	if (l.nature != AND)
 		return NOERR;
 	avancer();
@@ -133,11 +163,11 @@ err_syntax suite_affect_solo (lexeme l, AST A1){
 	return NOERR;
 }
 
-err_syntax operation (lexeme l ,AST A1) {	//eag avec variable + fonction à faire
+err_syntax operation (Lexeme l ,Ast A1) {	//eag avec variable + fonction Ã  faire
 	
 }
 
-err_syntax condition (lexeme l , AST A1 ) {
+err_syntax condition (Lexeme l , Ast A1 ) {
 	if (l.nature != IF ){
 		show_user_err(ERR_COND,l);
 		return ERR_COND;
@@ -169,7 +199,7 @@ err_syntax condition (lexeme l , AST A1 ) {
 	return NOERR;
 }
 
-err_syntax seq_comparaison (lexeme l,AST A1){
+err_syntax seq_comparaison (Lexeme l,Ast A1){
 	if (comparaison(l,A1)!= NOERR){
 		show_user_err(ERR_SCOMP,l);
 		return ERR_SCOMP;
@@ -183,7 +213,7 @@ err_syntax seq_comparaison (lexeme l,AST A1){
 	return NOERR;	
 }
 
-err_syntax comparaison (lexeme l , AST A1){
+err_syntax comparaison (Lexeme l , Ast A1){
 	if(expression(l,A1) == NOERR) {
 		avancer();
 		l=lexeme_courant();
@@ -237,7 +267,7 @@ err_syntax comparaison (lexeme l , AST A1){
 						
 }
 
-err_syntax suite_comparaison (lexeme l , AST A1){
+err_syntax suite_comparaison (Lexeme l , Ast A1){
 	
 }
 
@@ -463,7 +493,7 @@ err_syntax test_op2 (Lexeme l,TypeOperateur *t) {
 
 err_syntax fin(Lexeme l){
   while (l.nature == ERREUR){
-    printf("Attention, on va continuer malgré : (%d,%d) %s\n",l.ligne,l.colonne,\
+    printf("Attention, on va continuer malgrÃ© : (%d,%d) %s\n",l.ligne,l.colonne,\
 	   l.chaine);
     avancer();
     l = lexeme_courant();
@@ -480,10 +510,10 @@ void show_user_err(const err_syntax current, const Lexeme l){
 void print_err(const err_syntax e){
   switch(e){
   case ERR_PRG:
-    printf("programme mal formé \n");
+    printf("programme mal formÃ© \n");
     break;
   case ERR_INSTR :
-    printf("instruction mal formée \n");
+    printf("instruction mal formÃ©e \n");
     break;
   case ERR_SINIT:
     printf("suite de l'initialisation incorect \n");
@@ -498,10 +528,10 @@ void print_err(const err_syntax e){
     printf("ptdr tes qui?????\n");
     break;
   case ERR_OP1:
-    printf("Opérande à priorité basse incorrecte\n");
+    printf("OpÃ©rande Ã  prioritÃ© basse incorrecte\n");
     break;
   case ERR_OP2:
-    printf("Opérande à priorité haute inccorrecte\n");
+    printf("OpÃ©rande Ã  prioritÃ© haute inccorrecte\n");
     break;
   case ERR_STERME:
         printf("sequence de terme non valide \n");
@@ -522,7 +552,7 @@ void print_err(const err_syntax e){
     printf("facteur incorect \n");
     break;
   case ERR_PARF:
-    printf("parenthese fermante oublié \n");
+    printf("parenthese fermante oubliÃ© \n");
     break;
   default:
     break;

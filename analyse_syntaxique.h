@@ -5,6 +5,7 @@
 #include "analyse_lexicale.h"
 
 typedef enum {
+  ERR_EXPR,
   ERR_PRG,
   ERR_INSTR,
   ERR_INIT,
