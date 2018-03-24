@@ -85,7 +85,7 @@ ss_fparam     -> eps
 
 fparam	      -> nom_var
 
-//Opérations (EAG modifiées
+//Opérations (EAG modifiées)
 
 operation    -> seq_terme
 seq_terme    -> terme ss_terme
@@ -98,29 +98,41 @@ ss_facteur   -> eps
 	     -> op2 facteur ss_facteur
 facteur	     -> identificateur
 
-//Conditions
 
-condition -> IF seq_comparaison THEN expression suite_condition
+//Conditions logiques
+
+condition -> IF seq_boolor THEN expression suite_condition
+
 suite_condition -> eps
 		-> ELSE expression
 
-seq_comparaison    ->comparaison suite_comparaison
-		   ->PARO comparaison PARF suite_comparaison
-		   
-comparaison -> (expression op_compar expression)
-	    -> NOT PARO expression op_compar expression PARF
-	    
-suite_comparaison  -> op_logique comparaison suite_comparaison
-		   -> op_logique PARO comparaison PARF suite_comparaison
-		   -> eps
+seq_boolor	->boolexp ss_boolor
+		->PARO boolor PARF ss_boolor
 
-op_logique	   -> LOGIC_OR
-		   -> LOGIC_AND
+ss_boolor	-> eps
+		-> op1log boolor ss_boolor
+
+boolor		-> seq_booland
+
+seq_booland	-> booland ss_booland
+		-> PARO booland PARF ss_booland
+
+ss_booland	-> eps
+		-> op2log booland ss_booland
+
+booland		-> valeur
+		-> comparaison
+
+comparaison	-> expression op_compar expression
+
+//Opérateurs d'expression logiques
+op1log	     -> LOGIC_OR
+op2log	     -> LOGIC_AND
 		   
 	    
-op_compar -> EQUALITY
-	  -> INEQUALITY
-	  -> GREATER_THAN
-	  -> LOWER_THAN
-	  -> LOWER_OR_EQUAL
-	  -> GREATER_OR_EQUAL 
+op_compar   -> EQUALITY
+	    -> INEQUALITY
+	    -> GREATER_THAN
+	    -> LOWER_THAN
+	    -> LOWER_OR_EQUAL
+	    -> GREATER_OR_EQUAL 
