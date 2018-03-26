@@ -38,11 +38,11 @@ LOWER_OR_EQUAL:		<=
 programme	-> seq_expression FIN_PRG
 
 //Une multitude d'expression
-seq_expression 	-> expression s_expression
+seq_expression 	-> expression ss_expression
 
 //Chaque expression est séparée par une FIN_EXPR
-s_expression 	-> eps
-		-> FIN_EXPR expression s_expression
+ss_expression 	-> eps
+		-> FIN_EXPR expression ss_expression
 
 //Une expression seule
 expression 	-> valeur
@@ -51,25 +51,25 @@ expression 	-> valeur
 	   	-> condition		// if then else 
 
 
-valeur    	-> identificateur	//Nom de variable
+valeur		-> constante
+		-> identificateur	//Nom de variable
 
 //Nom de variable ou appel de fonction
-identificateur	  -> constant
-		  -> nom_var seq_param
+identificateur	  -> nom_var seq_param
 
 seq_param	  -> param ss_param
 
-s_param		  -> eps
+ss_param	  -> eps
 		  -> param ss_param
 
 param		  -> nom_var
-		  -> constant
+		  -> constante
 
 nom_var		  -> chaine de caractères commençant par une lettre
 
 //Affectation : let <var> = <expr> [and <var> = <expr> ...] in <expr>
 
-affectation   -> LET seq_affect IN expr
+affectation   -> LET seq_affect IN expression
 
 seq_affect    -> affect ss_affect
 
@@ -98,7 +98,7 @@ terme	     -> seq_facteur
 seq_facteur  -> facteur ss_facteur
 ss_facteur   -> eps
 	     -> op2 facteur ss_facteur
-facteur	     -> identificateur
+facteur	     -> valeur
 
 
 //Conditions logiques
@@ -115,6 +115,7 @@ ss_boolor	-> eps
 		-> op1log boolor ss_boolor
 
 boolor		-> seq_booland
+		-> NOT seq_booland
 
 seq_booland	-> booland ss_booland
 		-> PARO booland PARF ss_booland
@@ -123,7 +124,9 @@ ss_booland	-> eps
 		-> op2log booland ss_booland
 
 booland		-> valeur
+		-> NOT valeur
 		-> comparaison
+		-> NOT comparaison
 
 comparaison	-> expression op_compar expression
 
