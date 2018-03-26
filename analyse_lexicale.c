@@ -78,7 +78,7 @@ void arreter() {
 //		soit un separateur,  soit le 1er caractere d'un lexeme
 
 void reconnaitre_lexeme() {
-  typedef enum {E_INIT, E_ENTIER, E_FIN, E_FIN_INSTR, E_CAR,E_FLOAT} Etat_Automate ;
+  typedef enum {E_INIT, E_ENTIER, E_FIN, E_FIN_EXPR, E_CAR,E_FLOAT} Etat_Automate ;
   Etat_Automate etat=E_INIT;
   float exp=0.1;
   lexeme_en_cours.valeur.val_f=0;
@@ -103,10 +103,10 @@ void reconnaitre_lexeme() {
 				  lexeme_en_cours.colonne = numero_colonne();
 				  ajouter_caractere(lexeme_en_cours.chaine, caractere_courant());
 
-				  //Reconnaissance fin de l'instruction
+				  //Reconnaissance fin de l'instruction ou programme
 				  if (caractere_courant() == ';'){
-					  lexeme_en_cours.nature = FIN_INSTR;
-					  etat = E_FIN_INSTR;
+					  lexeme_en_cours.nature = FIN_EXPR;
+					  etat = E_FIN_EXPR;
 				  }
 				  //Reconnaissance Numérique
 				  else if (caractere_courant() == '.'){
@@ -183,18 +183,20 @@ car:
 			  lexeme_en_cours.nature = identificateur(lexeme_en_cours.chaine);;
 			  etat = E_FIN;
 			  break;
-		  case E_FIN_INSTR: //On ne considère plus rien après ;; (ocaml sur turing)
+		  case E_FIN_EXPR:
 		    avancer_car();
-			  ajouter_caractere (lexeme_en_cours.chaine, caractere_courant()) ;
-			  if (strcmp(lexeme_en_cours.chaine, ";;") != 0 )
-				  lexeme_en_cours.nature = ERREUR;
-			  else
-				  lexeme_en_cours.nature = FIN_INSTR;
-			  avancer_car();
-			  etat = E_FIN;
-			  break;
+		    if (caractere_courant() != ';'){
+		      lexeme_en_cours.nature = FIN_EXPR;
+		    }
+		    else{
+		      ajouter_caractere (lexeme_en_cours.chaine, caractere_courant());
+		      lexeme_en_cours.nature = FIN_PRG;
+		      avancer_car();
+		    }
+		    etat = E_FIN;
+		    break;
 		  case E_FIN:
-			  break ;
+		    break ;
 	  }
   }
 }
@@ -362,7 +364,7 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
   		LEX_NAT_CHN(NUM);// sequence de chiffres
   
   //control lex
-		LEX_NAT_CHN(FIN_INSTR); //;;
+		LEX_NAT_CHN(FIN_EXPR); //;;
 	       	LEX_NAT_CHN(FIN_SEQUENCE);
 			default: return "ERREUR" ;
   }

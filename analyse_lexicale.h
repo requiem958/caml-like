@@ -20,9 +20,9 @@ typedef enum {
   DIV,              // /
   
   //Logic op
-  LOGIC_AND,
-  LOGIC_OR,
-  NOT,
+  LOGIC_AND,//&
+  LOGIC_OR,//or
+  NOT,//!
   
   //Comparison ops
   EQUALITY,
@@ -33,8 +33,8 @@ typedef enum {
   LOWER_OR_EQUAL,
   
   //Delimiters
-  PARO,    //(
-  PARF,    //)
+  PARO,    //( ou begin
+  PARF,    //) ou end
   
   //Various
   LET, //let
@@ -53,7 +53,8 @@ typedef enum {
   
   //control lex
   ERREUR,
-  FIN_INSTR, //;;
+  FIN_EXPR,//;
+  FIN_PRG, //;;
   FIN_SEQUENCE
 } Nature_Lexeme ;
 
