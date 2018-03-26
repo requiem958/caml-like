@@ -20,7 +20,9 @@ or
 !=
 >=
 <=
-blabla
-112
+blA
+110
 1.10
-"coucou"
+"string"
+""
+"\""
