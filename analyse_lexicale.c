@@ -128,6 +128,24 @@ void reconnaitre_lexeme() {
 					  lexeme_en_cours.nature = symb_to_lex(lexeme_en_cours.chaine);
 					  etat = E_FIN;
 				  }
+				  //Constante de type chaine de caracteres
+				  else if (caractere_courant() == '"'){
+				    lexeme_en_cours.chaine[0] = '\0';
+				    avancer_car();
+				    while(caractere_courant() != '"'){
+				      
+				      ajouter_caractere (lexeme_en_cours.chaine,\
+							 caractere_courant()) ;
+				      //Pour recuperer les " \" " on repere tout les \ et on ajoute sans vérification le caractère suivant
+				      if (caractere_courant() == '\\'){
+					avancer_car();
+					ajouter_caractere( lexeme_en_cours.chaine, caractere_courant() );
+				      }
+				      avancer_car();
+				    }
+				    lexeme_en_cours.nature = STRING;
+				    etat = E_FIN;
+				  }
 				  //Reconnaissance chaine de caractères sans symboles
 				  else {
 					  lexeme_en_cours.chaine[strlen(lexeme_en_cours.chaine)] = '\0';
@@ -245,6 +263,8 @@ Nature_Lexeme symb_to_lex(char *chaine){
 		return MOINS;
 	else IF_IDF("*")
 		return MUL;
+	else IF_IDF("!")
+	       return NOT;
 	else IF_IDF("/")
 		return DIV;
 	else IF_IDF("&")
@@ -362,9 +382,11 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
   		LEX_NAT_CHN(FUNCTION); //fonction
   		LEX_NAT_CHN(TYPE); //Data type
   		LEX_NAT_CHN(NUM);// sequence de chiffres
+		LEX_NAT_CHN(STRING);
   
   //control lex
-		LEX_NAT_CHN(FIN_EXPR); //;;
+		LEX_NAT_CHN(FIN_PRG); //;;
+		LEX_NAT_CHN(FIN_EXPR); //;
 	       	LEX_NAT_CHN(FIN_SEQUENCE);
 			default: return "ERREUR" ;
   }
@@ -393,7 +415,13 @@ void afficher(Lexeme l) {
       case FLOAT:
 	printf(", valeur = %lf", l.valeur.val_f);
 	break;
+      default:
+	break;
       }
+      break;
+    case STRING:
+      printf(", valeur = %s", l.chaine);
+      break;
     default:
       break;
     }

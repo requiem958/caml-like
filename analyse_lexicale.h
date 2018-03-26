@@ -50,6 +50,7 @@ typedef enum {
   FUNCTION, //fonction
   TYPE, //Data type
   NUM,// sequence de chiffres
+  STRING,//chaine de caracteres
   
   //control lex
   ERREUR,
@@ -67,7 +68,8 @@ typedef union {
 
 typedef enum {
   INT,
-  FLOAT
+  FLOAT,
+  STR
 } Type;
 
 typedef struct {
@@ -76,7 +78,7 @@ typedef struct {
   unsigned int colonne;         // numero de colonne
   char chaine[256];
   Type type;// chaine de caracteres || nom de variable
-  Valeur valeur;          // valeur d'un réel
+  Valeur valeur;          // valeur d'une variable
 } Lexeme; 
 
 void afficher(Lexeme l);
