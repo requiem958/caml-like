@@ -17,6 +17,8 @@ BEGIN:	  begin
 END:	  end
 PARO:	  (
 PARF:	  )
+COMMENTO: (*
+COMMENTF: *)
 
 //Lexemes d'opérateurs
 EQUAL:	  =
