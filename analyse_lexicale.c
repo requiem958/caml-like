@@ -305,6 +305,10 @@ Nature_Lexeme symb_to_lex(char *chaine){
 	 return PARF;
   else IF_IDF("(")
 	 return PARO;
+  else IF_IDF("(*")
+	 return COMMENTO;
+  else IF_IDF("*)")
+	 return COMMENTF;
   else IF_IDF("=")
 	 return EQUAL;
   else IF_IDF("==")
@@ -378,10 +382,10 @@ int est_symbole(char c)  {
 
 char *Nature_vers_Chaine (Nature_Lexeme nature) {
   switch (nature) {
-    LEX_NAT_CHN(PLUS);             // +
-    LEX_NAT_CHN(MOINS);            // -
-    LEX_NAT_CHN(MUL);	       // *
-    LEX_NAT_CHN(DIV);              // /
+    LEX_NAT_CHN(PLUS);
+    LEX_NAT_CHN(MOINS);
+    LEX_NAT_CHN(MUL);
+    LEX_NAT_CHN(DIV);
   
     //Logic op
     LEX_NAT_CHN(LOGIC_AND);
@@ -397,14 +401,16 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
     LEX_NAT_CHN(LOWER_OR_EQUAL);
   
     //Delimiters
-    LEX_NAT_CHN(PARO);    //(
-    LEX_NAT_CHN(PARF);    //)
+    LEX_NAT_CHN(PARO);
+    LEX_NAT_CHN(PARF);
+    LEX_NAT_CHN(COMMENTO);
+    LEX_NAT_CHN(COMMENTF);
   
     //Various
-    LEX_NAT_CHN(LET); //let
-    LEX_NAT_CHN(AND); //and
-    LEX_NAT_CHN(IN);// in
-    LEX_NAT_CHN(EQUAL); //=
+    LEX_NAT_CHN(LET);
+    LEX_NAT_CHN(AND);
+    LEX_NAT_CHN(IN);
+    LEX_NAT_CHN(EQUAL);
     LEX_NAT_CHN(IF);
     LEX_NAT_CHN(THEN);
     LEX_NAT_CHN(ELSE);

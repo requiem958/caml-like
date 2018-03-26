@@ -35,6 +35,8 @@ typedef enum {
   //Delimiters
   PARO,    //( ou begin
   PARF,    //) ou end
+  COMMENTO,//(*
+  COMMENTF,//*)
   
   //Various
   LET, //let
