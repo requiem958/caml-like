@@ -105,7 +105,7 @@ void lire_symb(){
 }
 
 /* --------------------------------------------------------------------- */
-/* Lit une chaine : mot-clé / identificateur */
+/* Lit une chaine finissant par des symboles / séparateurs / ; / " jusqu'à EOF: mot-clé / identificateur */
 void lire_chaine(){
   lexeme_en_cours.chaine[strlen(lexeme_en_cours.chaine)] = '\0';
   avancer_car();
