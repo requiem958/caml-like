@@ -107,6 +107,22 @@ static err_syntax type (Lexeme l,Ast* A1);
 static void print_err(err_syntax e);
 static void show_user_err(const err_syntax current, const Lexeme l);
 
+//functions for delete the commantery ptdr j'ai tenter l'anglais
+static void nocoment (Lexeme l);
+
+//fonction preprocesseur permetant de raccourcir drastiquement le code
+#define AVNC(x) 	avancer(),l=lexeme_courant(),nocoment (x),l=lexeme_courant();
+
+
+// cas des fin de fichier à gérer 
+void nocoment (Lexeme l){
+	if (l.nature ==COMMENTO)
+		while(l.nature != COMMENTF){
+			avancer();
+			l=lexeme_courant();
+		}
+}
+
 
 void analyser(char *nom_fichier, Ast* A1){
   Lexeme l;
@@ -138,6 +154,14 @@ static err_syntax programme (Lexeme l,Ast* A1){
 }
 
 static err_syntax seq_expression(Lexeme l){
+	if (expression(l)!=NOERR){
+    show_user_err(e,l);
+    return ERR_PRG;
+  }
+	avancer();
+	l=lexeme_courant();
+	nocoment (Lexeme l);
+	l=lexeme_courant();
   return NOERR;
 }
 
