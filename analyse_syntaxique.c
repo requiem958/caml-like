@@ -111,7 +111,7 @@ static void show_user_err(const err_syntax current, const Lexeme l);
 static void nocoment (Lexeme l);
 
 //fonction preprocesseur permetant de raccourcir drastiquement le code
-#define AVNC(x) 	avancer(),l=lexeme_courant(),nocoment (x),l=lexeme_courant();
+#define AVNC(x) 	do{avancer();l=lexeme_courant();nocoment (x) ;l=lexeme_courant();}while(0);
 
 
 // cas des fin de fichier à gérer 
