@@ -21,6 +21,10 @@ COMMENTO: (*
 COMMENTF: *)
 
 //Lexemes d'opérateurs
+PLUS:	  +
+MINUS:	  -
+MUL:	  *
+DIV:	  /
 EQUAL:	  =
 NOT:	  !
 LOGIC_AND:	&
@@ -102,8 +106,14 @@ terme	     -> seq_facteur
 seq_facteur  -> facteur ss_facteur
 ss_facteur   -> eps
 	     -> op2 facteur ss_facteur
-facteur	     -> valeur
+facteur	     -> MINUS valeur
+	     -> valeur
 
+op1	     -> PLUS
+	     -> MINUS
+
+op2	     -> MUL
+	     -> DIV
 
 //Conditions logiques
 

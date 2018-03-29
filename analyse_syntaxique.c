@@ -276,103 +276,216 @@ static err_syntax identificateur(Lexeme l){
 }
 
 static err_syntax seq_param(Lexeme l){
+
+  err_syntax e = NOERR;
+  e= param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SPARAM;
+  }
+  
+  //lecture d'une ssterme
+  l=lexeme_courant();
+  e= ss_param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SPARAM;
+  }
   return NOERR;
 }
 
 static err_syntax ss_param(Lexeme l){
+  err_syntax e = NOERR;
+  
+  e= param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSPARAM;
+  }
+  
+  l=lexeme_courant();
+  e= ss_param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSPARAM;
+  }
   return NOERR;
 }
-
+/*Actuellement on ne donne en parametre que variables et constantes, 
+dans l'idéal faudrait pouvoir donner des appels de fonctions
+donc revoir la structure pour ne lire que le nombre d'arguments nécessaires........ bizarre */
 static err_syntax param(Lexeme l){
+  err_syntax e = NOERR;
+  switch(l.nature){
+  case NUM:
+  case STRING:
+    avancer();
+    break;
+  default:
+    if( (e =nom_var(l)) != NOERR){
+      show_user_err(e,l);
+      return ERR_PARAM;
+    }
+    break;
+  }
   return NOERR;
 }
 
 static err_syntax nom_var(Lexeme l){
+  if (l.nature != VAR){
+    show_user_err(ERR_NOMVAR,l);
+    return ERR_VAR;
+  }
   return NOERR;
 }
 
 /* Definitions des affectations */
 
 static err_syntax affectation (Lexeme l, Ast* A1) {
-	if (l.nature != LET ) {
-		show_user_err(ERR_AFF,l);
-		return ERR_AFF;
-	}
-	avancer();
-	l=lexeme_courant();
-	if (seq_affect(l,A1) != NOERR ) {
-		show_user_err(ERR_AFF,l);
-		return ERR_AFF;
-	}
-	avancer();
-	l=lexeme_courant();
-	if (l.nature != IN ) {
-		show_user_err(ERR_AFF,l);
-		return ERR_AFF;
-	}
-	avancer();
-	l=lexeme_courant();
-	if (expression(l,A1) != NOERR ) {
-		show_user_err(ERR_AFF,l);
-		return ERR_AFF;
-	}	
+  err_syntax e = NOERR;
+  if (l.nature != LET ) {
+    show_user_err(ERR_AFF,l);
+    return ERR_AFF;
+  }
+  avancer();
+  l=lexeme_courant();
+  if ((e=seq_affect(l,A1)) != NOERR ) {
+    show_user_err(e,l);
+    return ERR_AFF;
+  }
+  avancer();
+  l=lexeme_courant();
+  if (l.nature != IN ) {
+    show_user_err(ERR_IN,l);
+    return ERR_AFF;
+  }
+  avancer();
+  l=lexeme_courant();
+  if ((e=expression(l,A1)) != NOERR ) {
+    show_user_err(e,l);
+    return ERR_AFF;
+  }	
 }
 
 static err_syntax affect (Lexeme l , Ast *A1){
-	if (l.nature != VAR){
-		show_user_err(ERR_AFFS,l);
-		return ERR_AFFS;
-	}
-		avancer();
-	l=lexeme_courant();
-	if (l.nature != EQUAL) {
-		show_user_err(ERR_AFFS,l);
-		return ERR_AFFS;
-	}
-		avancer();
-	l=lexeme_courant();
-	if (expression(l,A1) != NOERR) {
-		show_user_err(ERR_AFFS,l);
-		return ERR_AFFS;
-	}
-	return NOERR;
+  err_syntax e = NOERR;
+
+  e = object(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_AFF;
+  }
+  l = lexeme_courant();
+  if (l.nature != EQUAL){
+    show_user_err(ERR_EQU,l);
+    return ERR_AFF;
+  }
+  avancer();
+  l=lexeme_courant();
+  if ((e=expression(l,A1)) != NOERR) {
+    show_user_err(e,l);
+    return ERR_AFF;
+  }
+  return NOERR;
 }
 
 static err_syntax ss_affect (Lexeme l, Ast* A1){
-	if (l.nature != AND)
-		return NOERR;
-	avancer();
-	l=lexeme_courant();
-	if (affect_solo(l,A1) != NOERR ) {
-		show_user_err(ERR_SAFFS,l);
-		return ERR_SAFFS;
-	}
-	avancer();
-	l=lexeme_courant();
-	if (suite_affect_solo (l,A1) != NOERR ) {
-		show_user_err(ERR_AFF,l);
-		return ERR_AFF;
-	}
-	return NOERR;
+  err_syntax e = NOERR;
+  if (l.nature != AND)
+    return NOERR;
+  
+  avancer();
+  l=lexeme_courant();
+  if ((e=affect(l,A1)) != NOERR ) {
+    show_user_err(e,l);
+    return ERR_SSAFF;
+  }
+  
+  l=lexeme_courant();
+  if ((e=ss_affect(l,A1)) != NOERR ) {
+    show_user_err(e,l);
+    return ERR_SSAFF;
+  }
+  return NOERR;
 }
 
 static err_syntax seq_affect (Lexeme l, Ast *A1){
-  return NOERR;
+  err_syntax e = NOERR;
+  if ((e=affect(l,A1)) != NOERR ) {
+    show_user_err(e,l);
+    return ERR_SAFF;
+  }
+  
+  l=lexeme_courant();
+  if ((e=ss_affect(l,A1)) != NOERR ) {
+    show_user_err(e,l);
+    return ERR_SAFF;
+  }
+  return NOERR;  
 }
 
 static err_syntax object(Lexeme l){
-  return NOERR;
+  err_syntax e = NOERR;
+
+  e = nom_var(l);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_OBJ;
+  }
+
+  l = lexeme_courant();
+
+  e = seq_fparam(l);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_OBJ;
+  }
 }
 
 static err_syntax seq_fparam(Lexeme l){
+  err_syntax e = NOERR;
+  e= fparam(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SFPARAM;
+  }
+  
+  l=lexeme_courant();
+  e= ss_fparam(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SFPARAM;
+  }
   return NOERR;
 }
 
 static err_syntax ss_fparam(Lexeme l){
+  err_syntax e = NOERR;
+  
+  e= fparam(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSFPARAM;
+  }
+  
+  l=lexeme_courant();
+  e= ss_fparam(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSFPARAM;
+  }
   return NOERR;
 }
 
-static err_syntax fparam(Lexeme l){
+static err_syntax fparam(Lexeme l)
+{
+  err_syntax e = NOERR;
+  if( (e =nom_var(l)) != NOERR){
+    show_user_err(e,l);
+    return ERR_FPARAM;
+  }
   return NOERR;
 }
 
@@ -504,10 +617,31 @@ static err_syntax ss_facteur (Lexeme l,Ast* A2, Ast A1) {
   return NOERR;
 }
 
+static err_syntax facteur  (Lexeme l,Ast* A1){
+  err_syntax e = NOERR;
+  char is_minus = 0;
+  if (l.nature==MOINS){
+    avancer();
+    is_minus = 1;
+  }
+  l=lexeme_courant();
+  e= opunaire (l,A1, is_minus);
+  if (e != NOERR)
+    return ERR_FACTEUR;
+  return NOERR;
+}
+
 static err_syntax opunaire (Lexeme l,Ast* A1, char is_minus) {
-  Ast A2;
+  Ast A2 = NULL;
   err_syntax e = NOERR;
 
+  e = valeur(l);
+  if (e != NOERR){
+      show_user_err(e,l);
+      return ERR_FACTEUR;
+    }
+  
+  /*
   switch(l.nature){
   case NUM:
     A2 = creer_valeur(l.valeur,l.type);
@@ -529,25 +663,12 @@ static err_syntax opunaire (Lexeme l,Ast* A1, char is_minus) {
   default:
     return ERR_FACTEUR;
   }
+  */
   avancer();
   if (is_minus)
     *A1 = creer_operation(U_MOINS,NULL,A2);
   else
     *A1 = A2;
-  return NOERR;
-}
-
-static err_syntax facteur  (Lexeme l,Ast* A1){
-  err_syntax e = NOERR;
-  char is_minus = 0;
-  if (l.nature==MOINS){
-    avancer();
-    is_minus = 1;
-  }
-  l=lexeme_courant();
-  e= opunaire (l,A1, is_minus);
-  if (e != NOERR)
-    return ERR_FACTEUR;
   return NOERR;
 }
 
@@ -601,35 +722,35 @@ static err_syntax test_op2 (Lexeme l,TypeOperateur *t) {
 /* Definitions des conditions */
 
 static err_syntax condition (Lexeme l , Ast* A1 ) {
-	if (l.nature != IF ){
-		show_user_err(ERR_COND,l);
-		return ERR_COND;
-	}
-	avancer();
-	l=lexeme_courant();
-	if(seq_comparaison(l,A1) != NOERR) {
-		show_user_err(ERR_COND,l);
-		return ERR_COND;
-	}
-	avancer();
-	l=lexeme_courant();
-	if (l.nature != THEN ){
-		show_user_err(ERR_COND,l);
-		return ERR_COND;
-	}
-	avancer();
-	l=lexeme_courant();
-	if(expression(l,A1) != NOERR) {
-		show_user_err(ERR_COND,l);
-		return ERR_COND;
-	}
-	avancer();
-	l=lexeme_courant();	
-	if(suite_condition(l,A1) != NOERR) {
-		show_user_err(ERR_COND,l);
-		return ERR_COND;
-	}
-	return NOERR;
+  if (l.nature != IF ){
+    show_user_err(ERR_COND,l);
+    return ERR_COND;
+  }
+  avancer();
+  l=lexeme_courant();
+  if(seq_comparaison(l,A1) != NOERR) {
+    show_user_err(ERR_COND,l);
+    return ERR_COND;
+  }
+  avancer();
+  l=lexeme_courant();
+  if (l.nature != THEN ){
+    show_user_err(ERR_COND,l);
+    return ERR_COND;
+  }
+  avancer();
+  l=lexeme_courant();
+  if(expression(l,A1) != NOERR) {
+    show_user_err(ERR_COND,l);
+    return ERR_COND;
+  }
+  avancer();
+  l=lexeme_courant();	
+  if(suite_condition(l,A1) != NOERR) {
+    show_user_err(ERR_COND,l);
+    return ERR_COND;
+  }
+  return NOERR;
 }
 
 static err_syntax suite_condition (Lexeme l,Ast*A1){
