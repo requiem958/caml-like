@@ -54,6 +54,10 @@ expression 	-> valeur
 valeur		-> constante
 		-> identificateur	//Nom de variable
 
+constante	-> chaine de caractère
+		-> entier
+		-> flottant
+
 //Nom de variable ou appel de fonction
 identificateur	  -> nom_var seq_param
 

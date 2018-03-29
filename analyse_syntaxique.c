@@ -108,14 +108,14 @@ static void print_err(err_syntax e);
 static void show_user_err(const err_syntax current, const Lexeme l);
 
 //functions for delete the commantery ptdr j'ai tenter l'anglais
-static void nocoment (Lexeme l);
+static void nocomment (Lexeme l);
 
 //fonction preprocesseur permetant de raccourcir drastiquement le code
-#define AVNC(x) 	do{avancer();l=lexeme_courant();nocoment (x) ;l=lexeme_courant();}while(0);
+#define AVNC(x) 	do{avancer();l=lexeme_courant();nocomment (x) ;l=lexeme_courant();}while(0);
 
 
 // cas des fin de fichier à gérer 
-void nocoment (Lexeme l){
+void nocomment (Lexeme l){
 	if (l.nature ==COMMENTO)
 		while(l.nature != COMMENTF){
 			avancer();
@@ -125,9 +125,16 @@ void nocoment (Lexeme l){
 
 
 void analyser(char *nom_fichier, Ast* A1){
+  err_syntax e = NOERR;
   Lexeme l;
   demarrer(nom_fichier);
-  programme(lexeme_courant(), A1);
+  l = lexeme_courant();
+  e=programme(l, A1);
+  if (e != NOERR){
+    show_user_err(e,lexeme_courant());
+    arreter();
+    return;
+  }
   l = lexeme_courant();
   fin(l);
   l=lexeme_courant();
@@ -139,66 +146,133 @@ void analyser(char *nom_fichier, Ast* A1){
 
 static err_syntax programme (Lexeme l,Ast* A1){
   err_syntax e = NOERR;
-  e = instr(l,A1);
+  A1 = A1;
+  e = seq_expression(l);
   if (e != NOERR){
     show_user_err(e,l);
     return ERR_PRG;
   }
+  
   l = lexeme_courant();
-  e = fin_instr(l,A1);
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_PRG;
-  }
-  return NOERR;
+  nocomment(l);
+  
+  l = lexeme_courant();
+  if (l.nature != FIN_PRG)
+    e = ERR_FPRG;
+  return e;
 }
 
 static err_syntax seq_expression(Lexeme l){
-	if (expression(l)!=NOERR){
+  err_syntax e = NOERR;
+  e = expression(l,NULL);
+  if (e!=NOERR){
     show_user_err(e,l);
-    return ERR_PRG;
+    return ERR_SEXPR;
   }
-	avancer();
-	l=lexeme_courant();
-	nocoment (Lexeme l);
-	l=lexeme_courant();
+  
+  l=lexeme_courant();
+  nocomment (l);
+  
+  l=lexeme_courant();
+  e = ss_expression(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SEXPR;
+  }
+  
   return NOERR;
 }
 
 static err_syntax ss_expression(Lexeme l){
+  err_syntax e = NOERR;
+
+  /* Cas epsilon */
+  if (l.nature != FIN_EXPR)
+    return NOERR;
+
+  /* Cas suite d'expression */
+  avancer();
+  l = lexeme_courant();
+  nocomment(l);
+
+  l = lexeme_courant();
+  e = expression(l,NULL);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSEXPR;
+  }
+
+  l = lexeme_courant();
+  nocomment(l);
+  
+  l = lexeme_courant();
+  e = ss_expression(l);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSEXPR;
+  }
+
   return NOERR;
 }
 
-static err_syntax expression (Lexeme l,Ast* A1){
-	
-	if (valeur(l,A1)==NOERR)
-		return NOERR;
-	else if (affectation (l,A1)==NOERR)
-		return NOERR;
-	else if (operation(l,A1)==NOERR)
-		return NOERR;
-	else if (condition(l,A1)==NOERR)
-		return NOERR;
-	 show_user_err(ERR_EXPR,l);
-	return ERR_EXPR;
+static err_syntax expression (Lexeme l,Ast* A1){	
+  if (valeur(l,A1)==NOERR)
+    return NOERR;
+  else if (affectation (l,A1)==NOERR)
+    return NOERR;
+  else if (operation(l,A1)==NOERR)
+    return NOERR;
+  else if (condition(l,A1)==NOERR)
+    return NOERR;
+  show_user_err(ERR_EXPR,l);
+  return ERR_EXPR;
 	
 }
 
 /* Definitions des valeurs */
 
 static err_syntax valeur (Lexeme l, Ast* A1){
-	if ( l.nature == VAR)
-		return NOERR;
-	show_user_err(ERR_VAL,l);
-	return ERR_VAL;		
-}
+  err_syntax e = NOERR;
 
-static err_syntax constante(Lexeme l){
+  switch(l.nature){
+  case NUM:
+    break;
+  case STRING:
+    break;
+  default:
+    e=identificateur(l);
+    if (e != NOERR){
+      show_user_err(e,l);
+      return ERR_VAL;
+    }
+  }
+  //Cas constante
+  avancer();
   return NOERR;
 }
 
 static err_syntax identificateur(Lexeme l){
+  err_syntax e = NOERR;
+
+  e = nom_var(l);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_IDF;
+  }
+
+  l = lexeme_courant();
+  e = seq_param(l);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_IDF;
+  }
+
   return NOERR;
+  
 }
 
 static err_syntax seq_param(Lexeme l){

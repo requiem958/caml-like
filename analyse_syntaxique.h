@@ -6,6 +6,8 @@
 
 typedef enum {
   ERR_EXPR,
+  ERR_SEXPR,
+  ERR_SSEXPR,
   ERR_COND,
   ERR_COMP,
   ERR_VAL,
@@ -13,6 +15,7 @@ typedef enum {
   ERR_AFFS,
   ERR_SAFFS,
   ERR_PRG,
+  ERR_FPRG,
   ERR_INSTR,
   ERR_INIT,
   ERR_SINIT,
