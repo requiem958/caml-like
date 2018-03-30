@@ -122,7 +122,7 @@ condition -> IF seq_boolor THEN expression suite_condition
 suite_condition -> eps
 		-> ELSE expression
 
-seq_boolor	->boolexp ss_boolor
+seq_boolor	->boolor ss_boolor
 		->PARO boolor PARF ss_boolor
 
 ss_boolor	-> eps

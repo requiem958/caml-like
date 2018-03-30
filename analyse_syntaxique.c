@@ -113,6 +113,13 @@ static void nocomment (Lexeme l);
 //fonction preprocesseur permetant de raccourcir drastiquement le code
 #define AVNC(x) 	do{avancer();l=lexeme_courant();nocomment (x) ;l=lexeme_courant();}while(0);
 
+void err(err_syntax e,err_syntax e_const, Lexeme l){
+  if (e1 != NOERR){
+    show_user_err(e1,l);
+    return e2;
+  }
+}
+
 
 // cas des fin de fichier à gérer 
 void nocomment (Lexeme l){
@@ -491,14 +498,6 @@ static err_syntax fparam(Lexeme l)
 
 
 
-
-
-
-
-
-
-
-
 /* Definitions des opérations */
 
 static err_syntax operation (Lexeme l ,Ast* A1) {
@@ -802,21 +801,21 @@ static err_syntax seq_boolor(Lexeme l){
 }
 
 static err_syntax ss_boolor(Lexeme l){
-	if(l.nature!=LOGIC_OR){
-		return NOERR;
-	}
-	AVNC(l);
-	if(boolor(l)!=NOERR)
-			{
-			show_user_err(ERR_COND,l);
-    		return ERR_SSBOOL;
-	}	
-	l=lexeme_courant();
-		if(ss_boolor(l)!=NOERR)
-			{
-			show_user_err(ERR_COND,l);
-    		return ERR_SSBOOL;
-	}	
+  if(l.nature!=LOGIC_OR){
+    return NOERR;
+  }
+  AVNC(l);
+  if(boolor(l)!=NOERR)
+    {
+      show_user_err(ERR_COND,l);
+      return ERR_SSBOOL;
+    }	
+  l=lexeme_courant();
+  if(ss_boolor(l)!=NOERR)
+    {
+      show_user_err(ERR_COND,l);
+      return ERR_SSBOOL;
+    }	
   return NOERR;
 }
 
