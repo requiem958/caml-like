@@ -14,9 +14,11 @@ typedef enum {
   ERR_SSEXPR,
   ERR_EXPR,
   //Affectation
+  ERR_AFFE,
   ERR_SAFF,
   ERR_SSAFF,
   ERR_AFF,
+
   ERR_EQU,
   ERR_OBJ,
   //Operations
@@ -47,11 +49,6 @@ typedef enum {
   ERR_COMP,
   ERR_OPCOMP,
   
-  ERR_INSTR,
-  ERR_INIT,
-  ERR_SINIT,
-  ERR_FIN,
-  ERR_TYPE,
   ERR_OP1,
   ERR_OP2,
   ERR_LET,
