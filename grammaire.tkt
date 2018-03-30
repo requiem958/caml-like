@@ -139,8 +139,9 @@ ss_booland	-> eps
 
 booland		-> valeur
 		-> NOT valeur
-		-> op_compar exp exp
-		-> NOT op_compar exp exp
+		-> comparaison
+		-> NOT comparaison
+comparaison	-> PARO exp op_compar exp PARF
 
 //Opérateurs d'expression logiques
 op1log	     -> LOGIC_OR
