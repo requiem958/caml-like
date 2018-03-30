@@ -108,34 +108,58 @@ static void print_err(err_syntax e);
 static void show_user_err(const err_syntax current, const Lexeme l);
 
 //functions for delete the commantery ptdr j'ai tenter l'anglais
-static void nocomment (Lexeme l);
+static err_syntax nocomment (Lexeme l);
 
-//fonction preprocesseur permetant de raccourcir drastiquement le code
-#define AVNC(x) 	do{avancer();l=lexeme_courant();nocomment (x) ;l=lexeme_courant();}while(0);
+//fonction preprocesseur permetant de raccourcir drastiquement le code ,point virgule à ajouter lors de l'appel
+#define AVNC(x) 	do{\
+						avancer();\
+						l=lexeme_courant();\
+						if (nocomment (x)!=NOERR)\
+								return ERR_COMM ;\
+						l=lexeme_courant();\
+					}while(0)
+//prend l'erreur de la sous fonction en e et l'erreur de la fonction actuelle en const ,point virgule à ajouter lors de l'appel
+#define ERR(e,e_const,l) \
+do{\
+  if (e != NOERR){\
+    show_user_err(e,l);\
+    return e_const;\
+  }\
+}while(0)
 
-void err(err_syntax e,err_syntax e_const, Lexeme l){
-  if (e1 != NOERR){
-    show_user_err(e1,l);
-    return e2;
-  }
-}
 
-
-// cas des fin de fichier à gérer 
-void nocomment (Lexeme l){
-	if (l.nature ==COMMENTO)
-		while(l.nature != COMMENTF){
+// permet d'ignorer les commentaire et de verifier si ils sont correct
+static err_syntax nocomment (Lexeme l){
+	int i= 0 ;
+	if (l.nature ==COMMENTO){
+		i++;
+		while(i!=0&&l.nature!=FIN_SEQ){
+			if(l.nature ==COMMENTO)
+				i++;
+			if(l.nature==COMMENTF)
+				i--;
 			avancer();
 			l=lexeme_courant();
+			
 		}
+	}
+	if (l.nature==FIN_SEQ && i!=0)
+		return ERR_COMM;
+	return NOERR;
 }
 
-
+//fonction global pour analyser syntaxiquement un fichier 
 void analyser(char *nom_fichier, Ast* A1){
   err_syntax e = NOERR;
   Lexeme l;
   demarrer(nom_fichier);
   l = lexeme_courant();
+	if (nocomment(l)!=NOERR){
+		printf ("erreur critique: commentaire non fini dès le début du fichier #tusaispascoder\n");
+		arreter();
+		return;
+	}
+	l=lexeme_courant();
   e=programme(l, A1);
   if (e != NOERR){
     show_user_err(e,lexeme_courant());
@@ -150,43 +174,26 @@ void analyser(char *nom_fichier, Ast* A1){
   arreter();
 }
 
-
+// Lecture du debut du lexeme ce referencer au fichier grammaire.tkt pour les fonction ci-dessous
 static err_syntax programme (Lexeme l,Ast* A1){
   err_syntax e = NOERR;
   A1 = A1;
   e = seq_expression(l);
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_PRG;
-  }
-  
-  l = lexeme_courant();
-  nocomment(l);
-  
+	ERR(e,ERR_PRG,l);
   l = lexeme_courant();
   if (l.nature != FIN_PRG)
     e = ERR_FPRG;
-  return e;
+	AVNC(l);
+	return e;
 }
 
 static err_syntax seq_expression(Lexeme l){
   err_syntax e = NOERR;
   e = expression(l,NULL);
-  if (e!=NOERR){
-    show_user_err(e,l);
-    return ERR_SEXPR;
-  }
-  
-  l=lexeme_courant();
-  nocomment (l);
-  
+ ERR(e,ERR_SEXPR,l);
   l=lexeme_courant();
   e = ss_expression(l);
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SEXPR;
-  }
-  
+ ERR(e,ERR_SEXPR,l);
   return NOERR;
 }
 
@@ -198,174 +205,47 @@ static err_syntax ss_expression(Lexeme l){
     return NOERR;
 
   /* Cas suite d'expression */
-  avancer();
-  l = lexeme_courant();
-  nocomment(l);
-
-  l = lexeme_courant();
+AVNC(l);
   e = expression(l,NULL);
-
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SSEXPR;
-  }
-
-  l = lexeme_courant();
-  nocomment(l);
-  
+ERR(e,ERR_SSEXPR,l);
   l = lexeme_courant();
   e = ss_expression(l);
-
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SSEXPR;
-  }
-
+ERR(e,ERR_SSEXPR,l);
   return NOERR;
 }
 
 static err_syntax expression (Lexeme l,Ast* A1){	
-  if (valeur(l,A1)==NOERR)
-    return NOERR;
-  else if (affectation (l,A1)==NOERR)
-    return NOERR;
-  else if (operation(l,A1)==NOERR)
-    return NOERR;
-  else if (condition(l,A1)==NOERR)
-    return NOERR;
-  show_user_err(ERR_EXPR,l);
-  return ERR_EXPR;
-	
+	err_syntax e=NOERR;
+	switch (l.nature) {
+	case LET:
+		e=expression(l,A1);
+		ERR(e,ERR_EXPR,l);
+		break;
+	case IF:
+		e=condition(l);
+		ERR(e,ERR_EXPR,l);
+		break;
+	default:
+		e=operation(l);
+		ERR(e,ERR_EXPR,l);
+		break;
+	}
+	return NOERR;
 }
 
-/* Definitions des valeurs */
 
-static err_syntax valeur (Lexeme l, Ast* A1){
-  err_syntax e = NOERR;
-
-  switch(l.nature){
-  case NUM:
-    break;
-  case STRING:
-    break;
-  default:
-    e=identificateur(l);
-    if (e != NOERR){
-      show_user_err(e,l);
-      return ERR_VAL;
-    }
-  }
-  //Cas constante
-  avancer();
-  return NOERR;
-}
-
-static err_syntax identificateur(Lexeme l){
-  err_syntax e = NOERR;
-
-  e = nom_var(l);
-
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_IDF;
-  }
-
-  l = lexeme_courant();
-  e = seq_param(l);
-
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_IDF;
-  }
-
-  return NOERR;
-  
-}
-
-static err_syntax seq_param(Lexeme l){
-
-  err_syntax e = NOERR;
-  e= param(l);
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SPARAM;
-  }
-  
-  //lecture d'une ssterme
-  l=lexeme_courant();
-  e= ss_param(l);
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SPARAM;
-  }
-  return NOERR;
-}
-
-static err_syntax ss_param(Lexeme l){
-  err_syntax e = NOERR;
-  
-  e= param(l);
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SSPARAM;
-  }
-  
-  l=lexeme_courant();
-  e= ss_param(l);
-  if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SSPARAM;
-  }
-  return NOERR;
-}
-/*Actuellement on ne donne en parametre que variables et constantes, 
-dans l'idéal faudrait pouvoir donner des appels de fonctions
-donc revoir la structure pour ne lire que le nombre d'arguments nécessaires........ bizarre */
-static err_syntax param(Lexeme l){
-  err_syntax e = NOERR;
-  switch(l.nature){
-  case NUM:
-  case STRING:
-    avancer();
-    break;
-  default:
-    if( (e =nom_var(l)) != NOERR){
-      show_user_err(e,l);
-      return ERR_PARAM;
-    }
-    break;
-  }
-  return NOERR;
-}
-
-static err_syntax nom_var(Lexeme l){
-  if (l.nature != VAR){
-    show_user_err(ERR_NOMVAR,l);
-    return ERR_VAR;
-  }
-  return NOERR;
-}
 
 /* Definitions des affectations */
 
 static err_syntax affectation (Lexeme l, Ast* A1) {
   err_syntax e = NOERR;
-  if (l.nature != LET ) {
-    show_user_err(ERR_AFF,l);
+  if (l.nature != LET ) 
     return ERR_AFF;
-  }
-  avancer();
-  l=lexeme_courant();
-  if ((e=seq_affect(l,A1)) != NOERR ) {
-    show_user_err(e,l);
+	AVNC(l);
+  e=seq_affect(l,A1)
+	ERR(e,ERR_AFF,l);
+  if (l.nature != IN ) 
     return ERR_AFF;
-  }
-  avancer();
-  l=lexeme_courant();
-  if (l.nature != IN ) {
-    show_user_err(ERR_IN,l);
-    return ERR_AFF;
-  }
   avancer();
   l=lexeme_courant();
   if ((e=expression(l,A1)) != NOERR ) {
@@ -724,7 +604,113 @@ static err_syntax test_op2 (Lexeme l,TypeOperateur *t) {
   return NOERR;
 }
 
+/* Definitions des valeurs */
 
+static err_syntax valeur (Lexeme l, Ast* A1){
+  err_syntax e = NOERR;
+
+  switch(l.nature){
+  case NUM:
+    break;
+  case STRING:
+    break;
+  default:
+    e=identificateur(l);
+    if (e != NOERR){
+      show_user_err(e,l);
+      return ERR_VAL;
+    }
+  }
+  //Cas constante
+  avancer();
+  return NOERR;
+}
+
+static err_syntax identificateur(Lexeme l){
+  err_syntax e = NOERR;
+
+  e = nom_var(l);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_IDF;
+  }
+
+  l = lexeme_courant();
+  e = seq_param(l);
+
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_IDF;
+  }
+
+  return NOERR;
+  
+}
+
+static err_syntax seq_param(Lexeme l){
+
+  err_syntax e = NOERR;
+  e= param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SPARAM;
+  }
+  
+  //lecture d'une ssterme
+  l=lexeme_courant();
+  e= ss_param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SPARAM;
+  }
+  return NOERR;
+}
+
+static err_syntax ss_param(Lexeme l){
+  err_syntax e = NOERR;
+  
+  e= param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSPARAM;
+  }
+  
+  l=lexeme_courant();
+  e= ss_param(l);
+  if (e != NOERR){
+    show_user_err(e,l);
+    return ERR_SSPARAM;
+  }
+  return NOERR;
+}
+/*Actuellement on ne donne en parametre que variables et constantes, 
+dans l'idéal faudrait pouvoir donner des appels de fonctions
+donc revoir la structure pour ne lire que le nombre d'arguments nécessaires........ bizarre */
+static err_syntax param(Lexeme l){
+  err_syntax e = NOERR;
+  switch(l.nature){
+  case NUM:
+  case STRING:
+    avancer();
+    break;
+  default:
+    if( (e =nom_var(l)) != NOERR){
+      show_user_err(e,l);
+      return ERR_PARAM;
+    }
+    break;
+  }
+  return NOERR;
+}
+
+static err_syntax nom_var(Lexeme l){
+  if (l.nature != VAR){
+    show_user_err(ERR_NOMVAR,l);
+    return ERR_VAR;
+  }
+  return NOERR;
+}
 
 /* Definitions des conditions */
 
@@ -981,6 +967,7 @@ static err_syntax op_compar(Lexeme l){
 /* Autres fonctions plus ou moins utiles mais on y croit*/
 
 static err_syntax fin(Lexeme l){
+	nocomment(l);
   while (l.nature == ERREUR){
     printf("Attention, on va continuer malgrÃ© : (%d,%d) %s\n",l.ligne,l.colonne,\
 	   l.chaine);
