@@ -777,11 +777,11 @@ void show_user_err(const err_syntax current, const Lexeme l){
 case e:\
 printf(m);\
 break
-// à finir
+
 void print_err(const err_syntax e){
   switch(e){
-  STR_ERR( ERR_PRG,"programme mal forme \n");
-  STR_ERR(ERR_FPRG," ptdr tu sais pas finir des programmes \n");
+STR_ERR( ERR_PRG,"programme mal forme \n");
+STR_ERR(ERR_FPRG," ptdr tu sais pas finir des programmes \n");
 STR_ERR( ERR_COMM," commentaire NON FERME \n");
 STR_ERR(ERR_SEXPR," sequence d'expression incorect \n");
 STR_ERR(ERR_SSEXPR,"suite de sequence d'expression incorect \n");
@@ -789,36 +789,34 @@ STR_ERR(ERR_EXPR,"expression incorect \n");
 STR_ERR(ERR_AFFE,"affectation incorect \n");
 STR_ERR(ERR_SAFF,"sequence d'affectation incorect \n");
 STR_ERR(ERR_SSAFF,"Suite de sequence d'affectation incorect \n");
-  case ERR_LET:
-    printf("manque de let \n");
-    break;
-  case ERR_OP1:
-    printf("OpÃ©rande Ã  prioritÃ© basse incorrecte\n");
-    break;
-  case ERR_OP2:
-    printf("OpÃ©rande Ã  prioritÃ© haute inccorrecte\n");
-    break;
-  case ERR_STERME:
-        printf("sequence de terme non valide \n");
-    break;
-  case ERR_SSTERME:
-    printf("suite de la sequence de terme \n");
-    break;
-  case ERR_TERME:
-    printf("terme incorect et on parle pas des bains\n");
-    break;
-  case ERR_SFACTEUR:
-    printf("sequence de facteur incorect\n");
-    break;
-  case ERR_SSFACTEUR:
-    printf("suite de sequence de facteur incorect \n");
-    break;
-  case ERR_FACTEUR:
-    printf("facteur incorect \n");
-    break;
-  case ERR_PARF:
-    printf("parenthese fermante oubliÃ© \n");
-    break;
+STR_ERR(ERR_AFF," affectation solitaire incorect \n");
+STR_ERR(ERR_EQU," egale oublie \n");
+STR_ERR(ERR_OBJ," affectation impossible\n");
+STR_ERR(ERR_OPE," operation incorect \n");
+STR_ERR ( ERR_STERME ,"sequence de terme non valide \n");
+STR_ERR ( ERR_SSTERME,"suite de la sequence de terme \n");
+STR_ERR( ERR_TERME,"terme incorect et on parle pas des bains\n");
+STR_ERR( ERR_SFACTEUR,"sequence de facteur incorect\n");
+STR_ERR( ERR_SSFACTEUR,"suite de sequence de facteur incorect \n");
+STR_ERR( ERR_FACTEUR,"facteur incorect \n");
+STR_ERR( ERR_VAL,"valeur incorrect \n");
+STR_ERR(ERR_NOMVAR," nom de variable impossible\n");
+STR_ERR(ERR_IDF,"identificateur incorect \n");
+STR_ERR(ERR_COND,"condition incorect \n ");
+STR_ERR(ERR_THEN," le Then à disparu.... disparu ...disparu ...\n");
+STR_ERR(ERR_SCOND,"la suite de condition est incorect \n" );
+STR_ERR(ERR_SBOOLEAU," la sequence de booléen de 'or' est incorect \n");
+STR_ERR(ERR_SSBOOLEAU," la suite de sequence de booléen de 'or' est incorect \n");
+STR_ERR(ERR_BOOLEAU," le booléen ou est incorect \n");
+STR_ERR(ERR_LOR," operateur 'or' manquant\n");
+STR_ERR(ERR_SBOOLAND," la sequence de booléen de 'and' est incorect \n");
+STR_ERR(ERR_SSBOOLAND," la suite de sequence de booléen de 'and' est incorect \n");
+STR_ERR(ERR_BOOLAND," le booléen 'and' est incorect \n");
+STR_ERR(ERR_COMP,"comparaison incorect \n");
+STR_ERR(ERR_OP1,"Operande a  priorite basse incorrecte\n");
+STR_ERR(ERR_OP2,"Operande a  priorite haute inccorrecte\n");
+STR_ERR(ERR_LET,"manque de let \n");
+STR_ERR(ERR_PARF,"parenthese fermante oubliee \n");
   default:
     break;
   }
