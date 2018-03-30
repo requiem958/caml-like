@@ -6,7 +6,7 @@
 FIN_PRG:  ;;
 FIN_EXPR: ;
 
-//Lexemes de mots clés
+//Lexemes de mots clÃ©s
 LET:	  let
 AND:	  and
 IN:	  in
@@ -20,7 +20,7 @@ PARF:	  )
 COMMENTO: (*
 COMMENTF: *)
 
-//Lexemes d'opérateurs
+//Lexemes d'opÃ©rateurs
 PLUS:	  +
 MINUS:	  -
 MUL:	  *
@@ -36,7 +36,7 @@ INEQUALITY:	!=
 GREATER_OR_EQUAL:	>=
 LOWER_OR_EQUAL:		<=
 
-//Grammaire par ordre d'évaluation (a peu près)
+//Grammaire par ordre d'Ã©valuation (a peu prÃ¨s)
 
 //Axiome
 programme	-> seq_expression FIN_PRG
@@ -44,7 +44,7 @@ programme	-> seq_expression FIN_PRG
 //Une multitude d'expression
 seq_expression 	-> expression ss_expression
 
-//Chaque expression est séparée par une FIN_EXPR
+//Chaque expression est sÃ©parÃ©e par une FIN_EXPR
 ss_expression 	-> eps
 		-> FIN_EXPR expression ss_expression
 
@@ -74,7 +74,7 @@ ss_fparam     -> eps
 
 fparam	      -> nom_var */
 
-//Opérations (EAG modifiées)
+//OpÃ©rations (EAG modifiÃ©es)
 
 operation    -> seq_terme
 seq_terme    -> terme ss_terme
@@ -98,7 +98,7 @@ op2	     -> MUL
 valeur		-> constante
 		-> identificateur	//Nom de variable
 
-constante	-> chaine de caractère
+constante	-> chaine de caractÃ¨re
 		-> entier
 		-> flottant
 
@@ -115,7 +115,7 @@ param		  -> nom_var
 		  -> constante
 		  */
 
-nom_var		  -> chaine de caractères commençant par une lettre
+nom_var		  -> chaine de caractÃ¨res commenÃ§ant par une lettre
 
 //Conditions logiques
 
@@ -125,7 +125,6 @@ suite_condition -> eps
 		-> ELSE expression
 
 seq_boolor	->boolor ss_boolor
-		->PARO boolor PARF ss_boolor
 
 ss_boolor	-> eps
 		-> op1log boolor ss_boolor
@@ -144,7 +143,7 @@ booland		-> valeur
 		-> op_compar exp exp
 		-> NOT op_compar exp exp
 
-//Opérateurs d'expression logiques
+//OpÃ©rateurs d'expression logiques
 op1log	     -> LOGIC_OR
 op2log	     -> LOGIC_AND
 		   
