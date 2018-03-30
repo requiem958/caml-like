@@ -133,7 +133,6 @@ boolor		-> seq_booland
 		-> NOT seq_booland
 
 seq_booland	-> booland ss_booland
-		-> PARO booland PARF ss_booland
 
 ss_booland	-> eps
 		-> op2log booland ss_booland
