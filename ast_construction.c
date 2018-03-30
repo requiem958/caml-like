@@ -21,6 +21,8 @@ Ast creer_valeur(Valeur val, Type t) {
   expr->nature = VALEUR;
   expr->t = t;
   switch(t){
+  case STR:
+    break;
   case INT:
     expr->valeur.val_i = val.val_i;
     break;

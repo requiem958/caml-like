@@ -40,6 +40,8 @@ void afficherarbre(Ast expr) {
     break ;
   case VALEUR:
     switch(expr->t){
+    case STR:
+      break;
     case FLOAT:
       printf("%lf", expr->valeur.val_f);
       break;
@@ -72,6 +74,8 @@ float evaluation(Ast expr) {
     }
   case VALEUR:
     switch(expr->t){
+    case STR:
+      break;
     case FLOAT:
       return expr->valeur.val_f;
     case INT:

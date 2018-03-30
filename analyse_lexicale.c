@@ -58,7 +58,7 @@ Lexeme lexeme_courant() {
 /* --------------------------------------------------------------------- */
 
 int fin_de_sequence() {
-  return lexeme_en_cours.nature == FIN_SEQUENCE;
+  return lexeme_en_cours.nature == FIN_SEQ;
 }
 
 /* --------------------------------------------------------------------- */
@@ -150,7 +150,7 @@ void reconnaitre_lexeme() {
     switch (etat) {
     case E_INIT:
       if (fin_de_sequence_car() != 0) {
-	lexeme_en_cours.nature = FIN_SEQUENCE;
+	lexeme_en_cours.nature = FIN_SEQ;
 	etat = E_FIN;
       }
       else {
@@ -425,7 +425,7 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
     //control lex
     LEX_NAT_CHN(FIN_PRG); //;;
     LEX_NAT_CHN(FIN_EXPR); //;
-    LEX_NAT_CHN(FIN_SEQUENCE);
+    LEX_NAT_CHN(FIN_SEQ);
   default: return "ERREUR" ;
   }
 } 
@@ -436,7 +436,7 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
 void afficher(Lexeme l) {
 
   switch (l.nature) {
-  case FIN_SEQUENCE:
+  case FIN_SEQ:
     break;
   default:
     printf("(ligne %d, ", l.ligne);

@@ -42,7 +42,7 @@ typedef enum {
   ERR_BOOLEAU,
   ERR_LOR,
   
-  ERR_S_BOOLAND,
+  ERR_SBOOLAND,
   ERR_SSBOOLAND,
   ERR_BOOLAND,
   

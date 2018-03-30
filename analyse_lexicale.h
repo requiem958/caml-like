@@ -58,7 +58,7 @@ typedef enum {
   ERREUR,
   FIN_EXPR,//;
   FIN_PRG, //;;
-  FIN_SEQUENCE
+  FIN_SEQ
 } Nature_Lexeme ;
 
 typedef union {
