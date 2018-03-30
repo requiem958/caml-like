@@ -5,17 +5,18 @@
 #include "analyse_lexicale.h"
 
 typedef enum {
-  ERR_EXPR,
+  ERR_PRG,
+  ERR_FPRG,
+  ERR_COMM,
   ERR_SEXPR,
   ERR_SSEXPR,
+  ERR_EXPR,
   ERR_COND,
   ERR_COMP,
   ERR_VAL,
   ERR_AFF,
   ERR_AFFS,
   ERR_SAFFS,
-  ERR_PRG,
-  ERR_FPRG,
   ERR_INSTR,
   ERR_INIT,
   ERR_SINIT,

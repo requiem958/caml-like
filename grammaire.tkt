@@ -49,31 +49,10 @@ ss_expression 	-> eps
 		-> FIN_EXPR expression ss_expression
 
 //Une expression seule
-expression 	-> valeur
-	   	-> affectation		//let 
-	   	-> operation		// operation de valeur
-	   	-> condition		// if then else 
+expression 	-> affectation		//let 
+	   	-> condition		// if then else
+		-> operation		// operation de valeur
 
-
-valeur		-> constante
-		-> identificateur	//Nom de variable
-
-constante	-> chaine de caractère
-		-> entier
-		-> flottant
-
-//Nom de variable ou appel de fonction
-identificateur	  -> nom_var seq_param
-
-seq_param	  -> param ss_param
-
-ss_param	  -> eps
-		  -> param ss_param
-
-param		  -> nom_var
-		  -> constante
-
-nom_var		  -> chaine de caractères commençant par une lettre
 
 //Affectation : let <var> = <expr> [and <var> = <expr> ...] in <expr>
 
@@ -86,14 +65,14 @@ ss_affect     -> eps
 
 affect	      -> object EQUAL expression
 
-object	      -> nom_var seq_fparam
+object	      -> nom_var /* seq_fparam
 
 seq_fparam    -> fparam ss_fparam
 
 ss_fparam     -> eps
 	      -> fparam ss_fparam
 
-fparam	      -> nom_var
+fparam	      -> nom_var */
 
 //Opérations (EAG modifiées)
 
@@ -108,12 +87,35 @@ ss_facteur   -> eps
 	     -> op2 facteur ss_facteur
 facteur	     -> MINUS valeur
 	     -> valeur
+	     -> PARO operation PARF
 
 op1	     -> PLUS
 	     -> MINUS
 
 op2	     -> MUL
 	     -> DIV
+
+valeur		-> constante
+		-> identificateur	//Nom de variable
+
+constante	-> chaine de caractère
+		-> entier
+		-> flottant
+
+//Nom de variable (ou appel de fonction)
+identificateur	  -> nom_var /*seq_param
+
+seq_param	  -> param ss_param
+		  -> eps
+
+ss_param	  -> eps
+		  -> param ss_param
+
+param		  -> nom_var
+		  -> constante
+		  */
+
+nom_var		  -> chaine de caractères commençant par une lettre
 
 //Conditions logiques
 
@@ -139,10 +141,8 @@ ss_booland	-> eps
 
 booland		-> valeur
 		-> NOT valeur
-		-> comparaison
-		-> NOT comparaison
-
-comparaison	-> expression op_compar expression
+		-> op_compar exp exp
+		-> NOT op_compar exp exp
 
 //Opérateurs d'expression logiques
 op1log	     -> LOGIC_OR
