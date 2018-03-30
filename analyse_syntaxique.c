@@ -489,10 +489,23 @@ static err_syntax fparam(Lexeme l)
   return NOERR;
 }
 
+
+
+
+
+
+
+
+
+
+
 /* Definitions des opérations */
 
 static err_syntax operation (Lexeme l ,Ast* A1) {
-  return seq_terme(l,A1);
+	if ( seq_terme(l,A1)!= NOERR){
+		show_user_err(e,l);
+		return ERROP;
+	}
 }
 
 static err_syntax seq_terme(Lexeme l,Ast* A2){
@@ -507,7 +520,7 @@ static err_syntax seq_terme(Lexeme l,Ast* A2){
   }
   
   //lecture d'une ssterme
-  l=lexeme_courant();
+ l=lexeme_courant();
   e= ss_terme(l,A2, A1);
   if (e != NOERR){
     show_user_err(e,l);
@@ -521,18 +534,11 @@ static err_syntax ss_terme(Lexeme l,Ast* A2, Ast A1){
   Ast A3;
   Ast A4;
   err_syntax e = NOERR;
-
-  //cas epsilon
-  if (l.nature == AND || l.nature == TYPE || l.nature==PARF || l.nature == IN || l.nature == FIN_EXPR){
-    *A2 = A1;
-    return NOERR;
-  }
   
-  //lecture et construction d'un op1
+  //lecture et construction d'un op1 on supoose ss-therme = epsilon si op faux
   e= op1(l, &Op);
   if (e != NOERR){
-    show_user_err(e,l);
-    return ERR_SSTERME;
+    return NOERR;
   }
   
   //lecture et construction du premier terme suivant op
@@ -621,16 +627,18 @@ static err_syntax facteur  (Lexeme l,Ast* A1){
   err_syntax e = NOERR;
   char is_minus = 0;
   if (l.nature==MOINS){
-    avancer();
+    AVNC(l)
     is_minus = 1;
   }
-  l=lexeme_courant();
-  e= opunaire (l,A1, is_minus);
-  if (e != NOERR)
-    return ERR_FACTEUR;
+  e = valeur(l);
+  if (e != NOERR){
+      show_user_err(e,l);
+      return ERR_FACTEUR;
+  }
   return NOERR;
+	
 }
-
+//inutil
 static err_syntax opunaire (Lexeme l,Ast* A1, char is_minus) {
   Ast A2 = NULL;
   err_syntax e = NOERR;
@@ -684,7 +692,7 @@ static err_syntax op1 (Lexeme l,TypeOperateur*t ){
   default :
     return ERR_OP1;
   }
-  avancer();
+  AVNC(l);
   return NOERR;
 }
 
@@ -699,7 +707,7 @@ static err_syntax op2 (Lexeme l,TypeOperateur *t) {
   default :
     return ERR_OP2;
   }
-  avancer();
+  AVNC(l);
   return NOERR;
 }
 
@@ -726,26 +734,22 @@ static err_syntax condition (Lexeme l , Ast* A1 ) {
     show_user_err(ERR_COND,l);
     return ERR_COND;
   }
-  avancer();
-  l=lexeme_courant();
-  if(seq_comparaison(l,A1) != NOERR) {
+  AVNC(l);
+  if(seq_boolor(l,A1) != NOERR) {
     show_user_err(ERR_COND,l);
     return ERR_COND;
   }
-  avancer();
-  l=lexeme_courant();
+AVNC(l);
   if (l.nature != THEN ){
     show_user_err(ERR_COND,l);
     return ERR_COND;
   }
-  avancer();
-  l=lexeme_courant();
+AVNC(l);
   if(expression(l,A1) != NOERR) {
     show_user_err(ERR_COND,l);
     return ERR_COND;
   }
-  avancer();
-  l=lexeme_courant();	
+AVNCL(l);
   if(suite_condition(l,A1) != NOERR) {
     show_user_err(ERR_COND,l);
     return ERR_COND;
@@ -754,31 +758,143 @@ static err_syntax condition (Lexeme l , Ast* A1 ) {
 }
 
 static err_syntax suite_condition (Lexeme l,Ast*A1){
+	if (l.nature!=ELSE)
+		return NOERR;
+	AVNC(l);
+	if(expression(l)!=NOERR){
+		    show_user_err(ERR_COND,l);
+    return ERR_SCOND;
+	}	
   return NOERR;
 }
 
 static err_syntax seq_boolor(Lexeme l){
+	if(boolor(l)==NOERR){
+		l=lexeme_courant();
+		if(ss_boolor(l)!=NOERR){
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+		return NOERR;
+	}
+	if(l.nature!=PARO){
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+	AVNC(l);
+	if(boolor(l)!=NOERR)
+	{
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+	l=lexeme_courant();
+	if(l.nature!=PARF){
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+	AVNC(l);
+		if(ss_boolor(l)!=NOERR)
+	{
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}	
   return NOERR;
 }
 
 static err_syntax ss_boolor(Lexeme l){
+	if(l.nature!=LOGIC_OR){
+		return NOERR;
+	}
+	AVNC(l);
+	if(boolor(l)!=NOERR)
+			{
+			show_user_err(ERR_COND,l);
+    		return ERR_SSBOOL;
+	}	
+	l=lexeme_courant();
+		if(ss_boolor(l)!=NOERR)
+			{
+			show_user_err(ERR_COND,l);
+    		return ERR_SSBOOL;
+	}	
   return NOERR;
 }
 
 static err_syntax boolor(Lexeme l){
+	if (l.nature ==NOT){
+		AVNC(l);
+	}
+	if(saq_booland(l)!=NOERR)
+		{
+			show_user_err(ERR_BOOL,l);
+    		return ERR_BOOL;
+	}	
   return NOERR;
 }
 
 static err_syntax seq_booland(Lexeme l){
+		if(booland(l)==NOERR){
+		l=lexeme_courant();
+		if(ss_booland(l)!=NOERR){
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+		return NOERR;
+	}
+	if(l.nature!=PARO){
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+	AVNC(l);
+	if(booland(l)!=NOERR)
+	{
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+	l=lexeme_courant();
+	if(l.nature!=PARF){
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}
+	AVNC(l);
+		if(ss_booland(l)!=NOERR)
+	{
+			show_user_err(ERR_COND,l);
+    		return ERR_SBOOL;
+	}	
   return NOERR;
 }
 
 static err_syntax ss_booland(Lexeme l){
+	if(l.nature!=LOGIC_AND){
+		return NOERR;
+	}
+	AVNC(l);
+	if(booland(l)!=NOERR)
+			{
+			show_user_err(ERR_COND,l);
+    		return ERR_SSBOOL;
+	}	
+	l=lexeme_courant();
+		if(ss_booland(l)!=NOERR)
+			{
+			show_user_err(ERR_COND,l);
+    		return ERR_SSBOOL;
+	}	
   return NOERR;
 }
 
+
 static err_syntax booland(Lexeme l){
-  return NOERR;
+	if (l.nature ==NOT){
+		AVNC(l);			
+	}
+	if(l.nature==VALEUR)
+		return NOERR
+	if (comparaison(l)==NOERR)
+		return NOERR
+	show_user_err(ERR_SSBOOL,l);
+    return ERR_SSBOOL;		
 }
 
 static err_syntax comparaison (Lexeme l , Ast A1){
