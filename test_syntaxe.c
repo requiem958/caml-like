@@ -20,8 +20,8 @@ int main (int argc, char *argv[]) {
     printf("Il faut donner un nom de fichier en argument !\n") ;
     return 1 ;
   }
-   afficherarbre(a_res);
-   printf("\nres = %lf\n", evaluation(a_res));
-  libere(a_res);
+  //   afficherarbre(a_res);
+  // printf("\nres = %lf\n", evaluation(a_res));
+  //libere(a_res);
   return 0 ;
 }

@@ -66,9 +66,10 @@ float evaluation(Ast expr) {
     case N_DIV:
       if (evaluation(expr->droite) != 0)
 	return evaluation(expr->gauche)/evaluation(expr->droite);
-      else
+      else{
 	printf("Erreur division par zéro\n");
 	return INT_MAX;
+}
     case U_MOINS:
       return -evaluation(expr->droite);
     }

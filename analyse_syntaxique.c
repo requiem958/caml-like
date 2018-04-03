@@ -117,6 +117,8 @@ static err_syntax nocomment (Lexeme l){
   int i= 0 ;
   if (l.nature ==COMMENTO){
     i++;
+    avancer();
+    l=lexeme_courant();
     while(i!=0&&l.nature!=FIN_SEQ){
       if(l.nature ==COMMENTO)
 	i++;
@@ -228,6 +230,7 @@ static err_syntax affectation (Lexeme l, Ast* A1) {
   AVNC(l);
   e=seq_affect(l,A1);
   ERR(e,ERR_AFF,l);
+  l=lexeme_courant();
   if (l.nature != IN ) 
     return ERR_AFFE;
   AVNC(l);
@@ -438,12 +441,11 @@ static err_syntax ss_facteur (Lexeme l,Ast* A2, Ast A1) {
 
 static err_syntax facteur  (Lexeme l,Ast* A1){
   err_syntax e = NOERR;
-  char is_minus = 0;
-  if(is_minus)is_minus++;
+  //  char is_minus = 0;
   A1=A1;
   if (l.nature==MOINS){
     AVNC(l);
-    is_minus = 1;
+    //is_minus = 1;
   }
   if (l.nature == PARO){
     AVNC(l);
@@ -522,6 +524,7 @@ static err_syntax valeur (Lexeme l, Ast* A1){
       show_user_err(e,l);
       return ERR_VAL;
     }
+    return NOERR;
   }
   //Cas constante
   AVNC(l);
@@ -615,6 +618,7 @@ static err_syntax condition (Lexeme l , Ast* A1 ) {
   AVNC(l);
   e= seq_boolor(l) ;
   ERR(e,ERR_COND,l);
+  l=lexeme_courant();
   if (l.nature != THEN ){
     show_user_err(ERR_THEN,l);
     return ERR_COND;
@@ -622,6 +626,7 @@ static err_syntax condition (Lexeme l , Ast* A1 ) {
   AVNC(l);
   e=expression(l,A1) ;
   ERR(e,ERR_COND,l);
+  l=lexeme_courant();
   e=suite_condition(l,A1);
   ERR(e,ERR_COND,l);
   return NOERR;
@@ -717,6 +722,9 @@ static err_syntax comparaison (Lexeme l , Ast *A1){
   AVNC(l);
   e=expression(l,NULL);
   ERR(e,ERR_COMP,l);
+
+  //AVNC pas approprié, expression nous amene directement sur op_compar
+  //AVNC(l);
   l=lexeme_courant();
   e=op_compar(l,NULL);
   ERR(e,ERR_COMP,l);		

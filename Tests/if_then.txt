@@ -1,1 +1,1 @@
-if (let a = 3 in a ) == 4 then print_string "coucou";;
+if ( let a = 3 in a == 4) then print_string ;;
