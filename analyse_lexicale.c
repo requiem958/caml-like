@@ -97,9 +97,66 @@ void lire_constante_chaine(){
 /* --------------------------------------------------------------------- */
 /* Lit une suite de symboles accolés ayant un sens */
 void lire_symb(){
-  while (est_symbole(caractere_courant()) ){
-    ajouter_caractere( lexeme_en_cours.chaine, caractere_courant() );
-    avancer_car();
+  typedef enum {E_INIT, E_COMO,E_COMF,E_OP,E_FP,E_FIN} etats;
+  etats e = E_INIT;
+  while(e!=E_FIN && est_symbole(caractere_courant())){
+    switch(e){
+    case E_INIT:
+      switch(caractere_courant()){
+      case '+':
+      case '-':
+      case '/':
+      case '&':
+      case ')':
+	e = E_FIN;
+	break;
+      case '(':
+	e = E_COMO;
+	break;
+      case '*':
+	e = E_COMF;
+	break;
+      case ';':
+	e = E_FP;
+	break;
+      default:
+	e = E_OP;
+	break;
+      }
+      ajouter_caractere(lexeme_en_cours.chaine, caractere_courant());
+      avancer_car();
+      break;
+    case E_COMO:
+      if (caractere_courant() == '*'){
+	ajouter_caractere(lexeme_en_cours.chaine,caractere_courant());
+	avancer_car();
+      }
+      e = E_FIN;
+      break;
+    case E_COMF:
+      if (caractere_courant() == ')'){
+	ajouter_caractere(lexeme_en_cours.chaine,caractere_courant());
+	avancer_car();
+      }
+      e = E_FIN;
+      break;
+    case E_OP:
+      if (caractere_courant() == '='){
+	ajouter_caractere(lexeme_en_cours.chaine,caractere_courant());
+	avancer_car();
+      }
+      e = E_FIN;
+      break;
+    case E_FP:
+      if (caractere_courant() == ';'){
+	ajouter_caractere(lexeme_en_cours.chaine,caractere_courant());
+	avancer_car();
+      }
+      e = E_FIN;
+      break;
+    case E_FIN:
+      break;
+    }
   }
   lexeme_en_cours.nature = symb_to_lex(lexeme_en_cours.chaine);
 }
@@ -133,7 +190,7 @@ void lire_chaine(){
 //		soit un separateur,  soit le 1er caractere d'un lexeme
 
 void reconnaitre_lexeme() {
-  typedef enum {E_INIT, E_ENTIER, E_STRING, E_FLOAT, E_SYMB, E_CAR, E_FIN, E_FIN_EXPR} Etat_Automate ;
+  typedef enum {E_INIT, E_ENTIER, E_STRING, E_FLOAT, E_SYMB, E_CAR, E_FIN} Etat_Automate ;
   Etat_Automate etat=E_INIT;
   float exp=0.1;
   lexeme_en_cours.valeur.val_f=0;
@@ -158,12 +215,8 @@ void reconnaitre_lexeme() {
 	lexeme_en_cours.colonne = numero_colonne();
 	ajouter_caractere(lexeme_en_cours.chaine, caractere_courant());
 
-	//Reconnaissance fin de l'instruction ou programme
-	if (caractere_courant() == ';'){
-	  etat = E_FIN_EXPR;
-	}
 	//Reconnaissance Numérique
-	else if (caractere_courant() == '.'){
+	if (caractere_courant() == '.'){
 	  lexeme_en_cours.nature = NUM;
 	  etat = E_FLOAT;
 	}
@@ -231,18 +284,6 @@ void reconnaitre_lexeme() {
       break;
     case E_CAR:
       lexeme_en_cours.nature = identificateur(lexeme_en_cours.chaine);;
-      etat = E_FIN;
-      break;
-    case E_FIN_EXPR:
-      avancer_car();
-      if (caractere_courant() != ';'){
-	lexeme_en_cours.nature = FIN_EXPR;
-      }
-      else{
-	ajouter_caractere (lexeme_en_cours.chaine, caractere_courant());
-	lexeme_en_cours.nature = FIN_PRG;
-	avancer_car();
-      }
       etat = E_FIN;
       break;
     case E_FIN:
@@ -323,6 +364,10 @@ Nature_Lexeme symb_to_lex(char *chaine){
 	 return LOWER_OR_EQUAL;
   else IF_IDF("!=")
 	 return INEQUALITY;
+  else IF_IDF(";")
+	 return FIN_EXPR;
+  else IF_IDF(";;")
+	 return FIN_PRG;
   else
     return ERREUR;
 }
@@ -331,7 +376,6 @@ Nature_Lexeme symb_to_lex(char *chaine){
 
 void ajouter_caractere (char *s, char c) {
   int l ;
-
   l = strlen(s) ;
   s[l] = c ;
   s[l+1] = '\0' ;
@@ -368,6 +412,7 @@ int est_symbole(char c)  {
   case '!':
   case '&':
   case '|':
+  case ';':
     return 1;
   default:
     return 0;
