@@ -143,6 +143,16 @@ booland		-> valeur
 		-> NOT comparaison
 comparaison	-> PARO exp op_compar exp PARF
 
+/* option
+boland -> NOT comparaison
+	-> comparaison
+
+comparaison-> expression suitecomparaison
+
+suitecomparaison -> op_compar expression
+		-> eps
+		*/
+
 //Opérateurs d'expression logiques
 op1log	     -> LOGIC_OR
 op2log	     -> LOGIC_AND
