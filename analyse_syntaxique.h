@@ -13,11 +13,13 @@ typedef enum {
   ERR_SEXPR,
   ERR_SSEXPR,
   ERR_EXPR,
+  
   //Affectation
   ERR_AFFE,
   ERR_SAFF,
   ERR_SSAFF,
   ERR_AFF,
+  ERR_SAFFIN,
 
   ERR_EQU,
   ERR_OBJ,

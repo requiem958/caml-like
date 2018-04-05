@@ -28,7 +28,6 @@ static err_syntax affectation(Lexeme l,Ast *A1);
 static err_syntax operation(Lexeme l,Ast *A1);
 static err_syntax condition(Lexeme l,Ast *A1);
 
-
 /* Sous expressions de valeurs */
 static err_syntax identificateur(Lexeme l);
 
@@ -39,6 +38,8 @@ static err_syntax seq_param(Lexeme l);
 //static err_syntax param(Lexeme l);
 
 /* Sous expressions de affectation */
+
+static err_syntax suite_affect(Lexeme l,Ast* A1);
 
 static err_syntax seq_affect(Lexeme l, Ast* A1);
 static err_syntax ss_affect(Lexeme l,Ast *A1);
@@ -231,11 +232,18 @@ static err_syntax affectation (Lexeme l, Ast* A1) {
   e=seq_affect(l,A1);
   ERR(e,ERR_AFF,l);
   l=lexeme_courant();
+  e=suite_affect(l,A1);
+  ERR(e,ERR_AFF,l);
+  return NOERR;
+}
+
+static err_syntax suite_affect(Lexeme l,Ast* A1){
+  err_syntax e = NOERR;
   if (l.nature != IN ) 
-    return ERR_AFFE;
+    return NOERR;
   AVNC(l);
   e=expression(l,A1);
-  ERR(e,ERR_AFF,l);
+  ERR(e,ERR_SAFFIN,l);
   return NOERR;
 }
 
@@ -798,6 +806,7 @@ void print_err(const err_syntax e){
     STR_ERR(ERR_SAFF,"sequence d'affectation incorect \n");
     STR_ERR(ERR_SSAFF,"Suite de sequence d'affectation incorect \n");
     STR_ERR(ERR_AFF," affectation solitaire incorect \n");
+    STR_ERR(ERR_SAFFIN,"expression post-in incorrecte");
     STR_ERR(ERR_EQU," egale oublie \n");
     STR_ERR(ERR_OBJ," affectation impossible\n");
     STR_ERR(ERR_OPE," operation incorect \n");
