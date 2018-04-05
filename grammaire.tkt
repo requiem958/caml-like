@@ -28,7 +28,7 @@ DIV:	  /
 EQUAL:	  =
 NOT:	  !
 LOGIC_AND:	&
-LOGIC_OR: 	or
+LOGIC_OR:	or
 GREATER_THAN:	>
 LOWER_THAN:	<
 EQUALITY:	==
@@ -42,30 +42,33 @@ LOWER_OR_EQUAL:		<=
 programme	-> seq_expression FIN_PRG
 
 //Une multitude d'expression
-seq_expression 	-> expression ss_expression
+seq_expression	-> expression ss_expression
 
 //Chaque expression est séparée par une FIN_EXPR
-ss_expression 	-> eps
+ss_expression	-> eps
 		-> FIN_EXPR expression ss_expression
 
 //Une expression seule
-expression 	-> affectation		//let 
-	   	-> condition		// if then else
+expression	-> affectation		//let 
+		-> condition		// if then else
 		-> operation		// operation de valeur
 
 
 //Affectation : let <var> = <expr> [and <var> = <expr> ...] in <expr>
 
-affectation   -> LET seq_affect IN expression
+affectation	-> LET seq_affect suite_affect
 
-seq_affect    -> affect ss_affect
+suite_affect	-> eps
+		-> IN expression
 
-ss_affect     -> eps
-	      -> AND affect ss_affect
+seq_affect	-> affect ss_affect
 
-affect	      -> object EQUAL expression
+ss_affect	-> eps
+		-> AND affect ss_affect
 
-object	      -> nom_var /* seq_fparam
+affect		-> object EQUAL expression
+
+object		-> nom_var /* seq_fparam
 
 seq_fparam    -> fparam ss_fparam
 
