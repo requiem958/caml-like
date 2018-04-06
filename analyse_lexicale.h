@@ -68,6 +68,11 @@ typedef union {
   char *string;
 } Valeur;
 
+typedef struct {
+  Valeur val;
+  char *nom;
+} Variable;
+
 typedef enum {
   INT,
   FLOAT,
