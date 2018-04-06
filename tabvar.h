@@ -13,9 +13,11 @@ typedef struct {
   int taille;
 } MemVar;
 
-void ajouter_var (Variable w);
+void ajouter_var (Variable w,MemVar m);
 
-void chercher_var (char *var);
+int chercher_var (char *var,MemVar m,Valeur res);
+
+void copie_environement (MemVar m ,MemVar m2);
 
 
 
