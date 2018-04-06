@@ -70,6 +70,7 @@ typedef union {
 
 typedef struct {
   Valeur val;
+  Type t;
   char *nom;
 } Variable;
 
