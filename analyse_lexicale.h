@@ -68,17 +68,17 @@ typedef union {
   char *string;
 } Valeur;
 
-typedef struct {
-  Valeur val;
-  Type t;
-  char *nom;
-} Variable;
-
 typedef enum {
   INT,
   FLOAT,
   STR
 } Type;
+
+typedef struct {
+  Valeur val;
+  Type t;
+  char *nom;
+} Variable;
 
 typedef struct {
   Nature_Lexeme nature;    // nature du lexeme

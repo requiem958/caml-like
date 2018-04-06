@@ -82,6 +82,7 @@ static err_syntax ss_booland(Lexeme l);
 static err_syntax booland(Lexeme l);
 
 static err_syntax comparaison(Lexeme l, Ast*A1);
+static err_syntax suite_comparaison (Lexeme l , Ast *A1);
 
 static err_syntax op_compar(Lexeme l,Ast*A1);
 
@@ -127,7 +128,7 @@ static err_syntax nocomment (Lexeme l){
 	i--;
       avancer();
       l=lexeme_courant();
-			
+
     }
   }
   if (l.nature==FIN_SEQ && i!=0)
@@ -135,7 +136,7 @@ static err_syntax nocomment (Lexeme l){
   return NOERR;
 }
 
-//fonction global pour analyser syntaxiquement un fichier 
+//fonction global pour analyser syntaxiquement un fichier
 void analyser(char *nom_fichier, Ast* A1){
   err_syntax e = NOERR;
   Lexeme l;
@@ -201,7 +202,7 @@ static err_syntax ss_expression(Lexeme l){
   return NOERR;
 }
 
-static err_syntax expression (Lexeme l,Ast* A1){	
+static err_syntax expression (Lexeme l,Ast* A1){
   err_syntax e=NOERR;
   switch (l.nature) {
   case LET:
@@ -226,7 +227,7 @@ static err_syntax expression (Lexeme l,Ast* A1){
 
 static err_syntax affectation (Lexeme l, Ast* A1) {
   err_syntax e = NOERR;
-  if (l.nature != LET ) 
+  if (l.nature != LET )
     return ERR_LET;
   AVNC(l);
   e=seq_affect(l,A1);
@@ -239,7 +240,7 @@ static err_syntax affectation (Lexeme l, Ast* A1) {
 
 static err_syntax suite_affect(Lexeme l,Ast* A1){
   err_syntax e = NOERR;
-  if (l.nature != IN ) 
+  if (l.nature != IN )
     return NOERR;
   AVNC(l);
   e=expression(l,A1);
@@ -311,7 +312,7 @@ static err_syntax seq_fparam(Lexeme l){
      show_user_err(e,l);
      return ERR_SFPARAM;
      }
-  
+
      l=lexeme_courant();
      e= ss_fparam(l);
      if (e != NOERR){
@@ -324,13 +325,13 @@ static err_syntax seq_fparam(Lexeme l){
 /*
   static err_syntax ss_fparam(Lexeme l){
   err_syntax e = NOERR;
-  
+
   e= fparam(l);
   if (e != NOERR){
   show_user_err(e,l);
   return ERR_SSFPARAM;
   }
-  
+
   l=lexeme_courant();
   e= ss_fparam(l);
   if (e != NOERR){
@@ -367,7 +368,7 @@ static err_syntax seq_terme(Lexeme l,Ast* A2){
   Ast A1;
   err_syntax e = NOERR;
   e= terme(l,&A1);
-  ERR(e,ERR_STERME,l); 
+  ERR(e,ERR_STERME,l);
   l=lexeme_courant();
   e= ss_terme(l,A2, A1);
   ERR(e,ERR_STERME,l);
@@ -379,13 +380,13 @@ static err_syntax ss_terme(Lexeme l,Ast* A2, Ast A1){
   Ast A3;
   Ast A4;
   err_syntax e = NOERR;
-  
+
   //lecture et construction d'un op1 on supoose ss-therme = epsilon si op faux
   e= op1(l, &Op);
   if (e != NOERR){
     return NOERR;
   }
-  
+
   //lecture et construction du premier terme suivant op
   l=lexeme_courant();
   e= terme(l,&A3);
@@ -410,7 +411,7 @@ static err_syntax terme (Lexeme l,Ast* A1){
 static err_syntax seq_facteur (Lexeme l,Ast* A2){
   Ast A1;
   err_syntax e = NOERR;
-  
+
   e = facteur(l,&A1);
   ERR(e,ERR_SFACTEUR,l);
   l=lexeme_courant();
@@ -439,7 +440,7 @@ static err_syntax ss_facteur (Lexeme l,Ast* A2, Ast A1) {
   e= facteur(l,&A3);
   ERR(e,ERR_SSFACTEUR,l);
   A4 = creer_operation(Op,A1,A3);
-  
+
   //Lecture des facteurs restants
   l=lexeme_courant();
   e=ss_facteur(l, A2, A4);
@@ -469,7 +470,7 @@ static err_syntax facteur  (Lexeme l,Ast* A1){
   //Attention au minus
   e = valeur(l,NULL);
   ERR(e,ERR_FACTEUR,l);
-  return NOERR;	
+  return NOERR;
 }
 
 static err_syntax op1 (Lexeme l,TypeOperateur*t ){
@@ -548,7 +549,7 @@ static err_syntax identificateur(Lexeme l){
   e = seq_param(l);
   ERR(e,ERR_IDF,l);
   return NOERR;
-  
+
 }
 
 static err_syntax seq_param(Lexeme l){
@@ -556,7 +557,7 @@ static err_syntax seq_param(Lexeme l){
   /*err_syntax e = NOERR;
     e= param(l);
     ERR(e,ERR_SPARAM,l);
-  
+
     //lecture d'une ssterme
     l=lexeme_courant();
     e= ss_param(l);
@@ -570,13 +571,13 @@ static err_syntax seq_param(Lexeme l){
 /*
   static err_syntax ss_param(Lexeme l){
   err_syntax e = NOERR;
-  
+
   e= param(l);
   if (e != NOERR){
   show_user_err(e,l);
   return ERR_SSPARAM;
   }
-  
+
   l=lexeme_courant();
   e= ss_param(l);
   if (e != NOERR){
@@ -586,7 +587,7 @@ static err_syntax seq_param(Lexeme l){
   l=l;
   return NOERR;
   }
-  //Actuellement on ne donne en parametre que variables et constantes, 
+  //Actuellement on ne donne en parametre que variables et constantes,
   //dans l'idéal faudrait pouvoir donner des appels de fonctions
   //donc revoir la structure pour ne lire que le nombre d'arguments nécessaires..
   //bizarre
@@ -657,7 +658,7 @@ static err_syntax seq_boolor(Lexeme l){
   ERR(e,ERR_SBOOLEAU,l);
   l=lexeme_courant();
   e=ss_boolor(l);
-  ERR(e,ERR_SBOOLEAU,l);		
+  ERR(e,ERR_SBOOLEAU,l);
   return NOERR;
 }
 
@@ -668,10 +669,10 @@ static err_syntax ss_boolor(Lexeme l){
   }
   AVNC(l);
   e= boolor(l);
-  ERR(e,ERR_SSBOOLEAU,l);	
+  ERR(e,ERR_SSBOOLEAU,l);
   l=lexeme_courant();
   e=ss_boolor(l);
-  ERR(e,ERR_SSBOOLEAU,l);	
+  ERR(e,ERR_SSBOOLEAU,l);
   return NOERR;
 }
 
@@ -681,17 +682,17 @@ static err_syntax boolor(Lexeme l){
     AVNC(l);
   }
   e=seq_booland(l);
-  ERR(e,ERR_BOOLEAU,l);		
+  ERR(e,ERR_BOOLEAU,l);
   return NOERR;
 }
-/* booland le parc d'attraction de tout les booléen age<99 && age >0 */ 
+/* booland le parc d'attraction de tout les booléen age<99 && age >0 */
 static err_syntax seq_booland(Lexeme l){
   err_syntax e=NOERR;
   e =booland(l);
-  ERR(e,ERR_SBOOLAND,l);	
+  ERR(e,ERR_SBOOLAND,l);
   l=lexeme_courant();
   e=ss_booland(l);
-  ERR(e,ERR_SBOOLAND,l);	
+  ERR(e,ERR_SBOOLAND,l);
   return NOERR;
 }
 
@@ -701,48 +702,46 @@ static err_syntax ss_booland(Lexeme l){
     return NOERR;
   AVNC(l);
   e=booland(l);
-  ERR(e,ERR_SSBOOLAND,l);	
+  ERR(e,ERR_SSBOOLAND,l);
   l=lexeme_courant();
-  e=ss_booland(l);	
-  ERR(e,ERR_SSBOOLAND,l);	
+  e=ss_booland(l);
+  ERR(e,ERR_SSBOOLAND,l);
   return NOERR;
 }
 
 static err_syntax booland(Lexeme l){
   err_syntax e=NOERR;
   if (l.nature ==NOT){
-    AVNC(l);			
-  }
-  if(l.nature==VAR||l.nature== NUM){
-    valeur(l,NULL);
-    return NOERR;
+    AVNC(l);
   }
   e=comparaison(l,NULL);
   ERR(e,ERR_BOOLAND,l);
-  return NOERR;		
+  return NOERR;
 }
 
 static err_syntax comparaison (Lexeme l , Ast *A1){
   err_syntax e=NOERR;
   A1=A1;
-  if (l.nature != PARO)
-    return ERR_COMP;
-  AVNC(l);
   e=expression(l,NULL);
   ERR(e,ERR_COMP,l);
 
   //AVNC pas approprié, expression nous amene directement sur op_compar
   //AVNC(l);
   l=lexeme_courant();
+  e=suite_comparaison(l,NULL);
+  ERR(e,ERR_SCOMP,l);
+  return NOERR;
+}
+
+static err_syntax suite_comparaison (Lexeme l , Ast *A1){
+  err_syntax e=NOERR;
+  A1=A1;
   e=op_compar(l,NULL);
-  ERR(e,ERR_COMP,l);		
+  if (e!=NOERR)
+    return NOERR;
   l=lexeme_courant();
-  e=expression(l,A1);
-  ERR(e,ERR_COMP,l);
-  l=lexeme_courant();
-  if (l.nature != PARF)
-    return ERR_COMP;
-  AVNC(l);
+  e=expression(l,NULL);
+  ERR(e,ERR_SCOMP,l);
   return NOERR;
 }
 
@@ -830,6 +829,7 @@ void print_err(const err_syntax e){
     STR_ERR(ERR_SSBOOLAND," la suite de sequence de booléen de 'and' est incorect \n");
     STR_ERR(ERR_BOOLAND," le booléen 'and' est incorect \n");
     STR_ERR(ERR_COMP,"comparaison incorect \n");
+    STR_ERR(ERR_SCOMP,"suite de la comparaison incorrecte\n");
     STR_ERR(ERR_OP1,"Operande a  priorite basse incorrecte\n");
     STR_ERR(ERR_OP2,"Operande a  priorite haute inccorrecte\n");
     STR_ERR(ERR_LET,"manque de let \n");

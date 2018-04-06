@@ -49,6 +49,7 @@ typedef enum {
   ERR_BOOLAND,
   
   ERR_COMP,
+  ERR_SCOMP,
   ERR_OPCOMP,
   
   ERR_OP1,
