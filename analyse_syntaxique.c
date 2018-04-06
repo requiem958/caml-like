@@ -165,8 +165,7 @@ void analyser(char *nom_fichier, Ast* A1){
 // Lecture du debut du lexeme ce referencer au fichier grammaire.tkt pour les fonction ci-dessous
 static err_syntax programme (Lexeme l,Ast* A1){
   err_syntax e = NOERR;
-  A1 = A1;
-  e = seq_expression(l);
+  e = seq_expression(l,A1);
   ERR(e,ERR_PRG,l);
   l = lexeme_courant();
   if (l.nature != FIN_PRG)
@@ -175,30 +174,37 @@ static err_syntax programme (Lexeme l,Ast* A1){
   return e;
 }
 
-static err_syntax seq_expression(Lexeme l){
+static err_syntax seq_expression(Lexeme l, Ast* A1){
+  Ast A2=NULL,A3=NULL;
   err_syntax e = NOERR;
-  e = expression(l,NULL);
+  e = expression(l,&A2);
   ERR(e,ERR_SEXPR,l);
   l=lexeme_courant();
-  e = ss_expression(l);
+  e = ss_expression(l,&A3);
+  *A1 = creer_noeud(A_PRG,A2,A3)
   ERR(e,ERR_SEXPR,l);
   return NOERR;
 }
 
-static err_syntax ss_expression(Lexeme l){
+static err_syntax ss_expression(Lexeme l, Ast * A1){
   err_syntax e = NOERR;
-
+  Ast A2,A3;
   /* Cas epsilon */
-  if (l.nature != FIN_EXPR)
+  if (l.nature != FIN_EXPR){
+    *A1 = NULL;
     return NOERR;
+  }
 
   /* Cas suite d'expression */
   AVNC(l);
-  e = expression(l,NULL);
+  e = expression(l,&A2);
   ERR(e,ERR_SSEXPR,l);
   l = lexeme_courant();
-  e = ss_expression(l);
+  e = ss_expression(l,&A3);
   ERR(e,ERR_SSEXPR,l);
+
+  if (*A2 != NULL )
+    *A1 = creer_noeud(A_PRG,A2,A3);
   return NOERR;
 }
 
@@ -227,14 +233,21 @@ static err_syntax expression (Lexeme l,Ast* A1){
 
 static err_syntax affectation (Lexeme l, Ast* A1) {
   err_syntax e = NOERR;
+  Ast A2,A3;
   if (l.nature != LET )
     return ERR_LET;
+  
   AVNC(l);
-  e=seq_affect(l,A1);
+  e=seq_affect(l,&A2);
   ERR(e,ERR_AFF,l);
   l=lexeme_courant();
-  e=suite_affect(l,A1);
+  e=suite_affect(l,&A3);
   ERR(e,ERR_AFF,l);
+
+  if (A3==NULL)
+    *A1 = creer_noeud(A_IN,A2,A3);
+  else
+    *A1 = A2;
   return NOERR;
 }
 
@@ -250,38 +263,52 @@ static err_syntax suite_affect(Lexeme l,Ast* A1){
 
 static err_syntax seq_affect (Lexeme l, Ast *A1){
   err_syntax e = NOERR;
+  Ast A2,A3;
   A1=A1;
-  e = affect(l,NULL);
+  e = affect(l,&A2);
   ERR(e,ERR_SAFF,l);
   l=lexeme_courant();
-  e = ss_affect(l,NULL);
+  e = ss_affect(l,&A3);
   ERR(e,ERR_SAFF,l);
+
+  if (A3==NULL)
+    *A1 = A2;
+  else
+    *A1 = creer_noeud(A_AND,A2,A3);
   return NOERR;
 }
 
 static err_syntax ss_affect (Lexeme l, Ast* A1){
   err_syntax e = NOERR;
-  A1=A1;
+  Ast A2,A3;
 
   /* Cas epsilon */
-  if (l.nature != AND)
+  if (l.nature != AND){
+    *A1 = NULL;
     return NOERR;
+  }
 
   /* Cas suite d'expression */
   AVNC(l);
-  e = affect(l,NULL);
+  e = affect(l,&A2);
   ERR(e,ERR_SSAFF,l);
   l = lexeme_courant();
-  e = ss_affect(l,NULL);
+  e = ss_affect(l,&A3);
   ERR(e,ERR_SSAFF,l);
+  
+  if (A3==NULL)
+    *A1 = A2;
+  else
+    *A1 = creer_noeud(A_AND,A2,A3);
   return NOERR;
 }
 
 
 static err_syntax affect (Lexeme l , Ast *A1){
   err_syntax e = NOERR;
+  Ast A2,A3;
 
-  e = object(l);
+  e = object(l,&A2);
   ERR(e,ERR_AFF,l);
   l = lexeme_courant();
   if (l.nature != EQUAL){
@@ -289,13 +316,15 @@ static err_syntax affect (Lexeme l , Ast *A1){
     return ERR_AFF;
   }
   AVNC(l);
-  e=expression(l,A1);
+  e=expression(l,&A3);
   ERR(e,ERR_AFF,l);
+
+  *A1 = creer_noeud(A_LET,A2,A3);
   return NOERR;
 }
 
 
-static err_syntax object(Lexeme l){
+static err_syntax object(Lexeme l, Ast* A1){
   err_syntax e = NOERR;
   e = nom_var(l);
   ERR(e,ERR_OBJ,l);
