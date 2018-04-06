@@ -1,0 +1,37 @@
+            PRG
+      EXPR          PRG
+      
+expression possibilité 
+cas condition :
+                        IF
+           SEQ_BOOLOR             THEN 
+                                /         \
+                      expression si vrai    expression si faux
+                      
+                      
+cas affectation :
+
+si un IN alors                                IN
+                                        /               \
+si un AND ou des ANd                  AND               expr  
+                                    /     \
+                               AND         expr 
+                                /  \
+                            LeT     expr
+                            /  \
+                         Var    exp
+
+cas operation :
+      voir eag
+      
+      
+cas seq_boolor:
+
+si ou:                                      OU         
+si and:                            /                 \si 
+                            AND                        outil comp
+                      /                                   
+                      outil comp                    expr      expr
+                   /            \
+               epr                expr    
+                
