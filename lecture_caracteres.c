@@ -24,7 +24,7 @@ FILE *File;		// le fichier d'entree
 /* --------------------------------------------------------------------- */
 
 void demarrer_car(char *nom_fichier) {
-  if (strlen(nom_fichier) == 0)
+  if (nom_fichier == NULL || strlen(nom_fichier) == 0)
     File = stdin ;
   else
     File = fopen(nom_fichier, "r") ;
