@@ -1,6 +1,24 @@
-#include "analyse_lexical.h"
-#DEFINE MAXMEM 100
+#ifndef TABVAR_H_INCLUDED
+#define TABVAR_H_INCLUDED
 
+#include <stdbool.h>
+#define MAXMEM 100
+
+typedef union {
+  float val_f;
+  int val_i;
+  bool val_b;
+  char *string;
+} Valeur;
+
+typedef enum {
+  ERR,
+  INT,
+  FLOAT,
+  BOOL,
+  STR,
+  UNIT
+} Type;
 
 typedef struct {
   Valeur val;
@@ -13,18 +31,13 @@ typedef struct {
   int taille;
 } MemVar;
 
-void ajouter_var (Variable w,MemVar m);
+char* type(Variable v);
 
-int chercher_var (char *var,MemVar m,Valeur res);
+int ajouter_var (Variable *w,MemVar *m);
 
-void copie_environement (MemVar m ,MemVar m2);
+int chercher_var (char *var,MemVar *m,Valeur *res);
 
-
-
-
+void copie_environement (MemVar *m ,MemVar *m2);
 
 
-
-
-
-
+#endif

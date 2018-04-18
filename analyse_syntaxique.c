@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+
+#include "tabvar.h"
 #include "analyse_syntaxique.h"
 #include "analyse_lexicale.h"
 #include "lecture_caracteres.h"
 #include "type_ast.h"
 #include "ast_construction.h"
-#include <string.h>
 
 //Private functions
 
@@ -18,7 +21,7 @@ static err_syntax programme (Lexeme l,Ast* A1); //Axiome : programme
 /* Reconnaitre une expression (grammaire.tkt)*/
 
 static err_syntax seq_expression(Lexeme l,Ast*A1);
-static err_syntax ss_expression(Lexeme l,Ast*A1);
+static err_syntax ss_expression(Lexeme l,Ast*A2, Ast A1);
 static err_syntax expression (Lexeme l,Ast *A1);
 
 /* Expressions disponibles */
@@ -39,10 +42,10 @@ static err_syntax seq_param(Lexeme l);
 
 /* Sous expressions de affectation */
 
-static err_syntax suite_affect(Lexeme l,Ast* A1);
+static err_syntax suite_affect(Lexeme l,Ast* A2,Ast A1);
 
 static err_syntax seq_affect(Lexeme l, Ast* A1);
-static err_syntax ss_affect(Lexeme l,Ast *A1);
+static err_syntax ss_affect(Lexeme l,Ast *A2,Ast A1);
 static err_syntax affect(Lexeme l, Ast *A1);
 
 static err_syntax object(Lexeme l,Ast*A1);
@@ -71,14 +74,14 @@ static err_syntax ss_facteur (Lexeme l,Ast* A2, Ast A1);
 static err_syntax test_op2 (Lexeme l,TypeOp *t);
 
 /* Sous expressions de conditions */
-static err_syntax suite_condition(Lexeme l, Ast*A1);
+static err_syntax suite_condition(Lexeme l, Ast*A1, Ast A2, Ast A3);
 
 static err_syntax seq_boolor(Lexeme l,Ast*A1);
-static err_syntax ss_boolor(Lexeme l,Ast*A1);
+static err_syntax ss_boolor(Lexeme l,Ast*A2,Ast A1);
 static err_syntax boolor(Lexeme l,Ast*A1);
 
 static err_syntax seq_booland(Lexeme l,Ast*A1);
-static err_syntax ss_booland(Lexeme l,Ast*A1);
+static err_syntax ss_booland(Lexeme l,Ast*A2, Ast A1);
 static err_syntax booland(Lexeme l,Ast*A1);
 
 static err_syntax comparaison(Lexeme l, Ast*A1);
@@ -174,37 +177,36 @@ static err_syntax programme (Lexeme l,Ast* A1){
   return e;
 }
 
-static err_syntax seq_expression(Lexeme l, Ast* A1){
-  Ast A2=NULL,A3=NULL;
+static err_syntax seq_expression(Lexeme l, Ast* A2){
+  Ast A1;
   err_syntax e = NOERR;
-  e = expression(l,&A2);
+  e = expression(l,&A1);
   ERR(e,ERR_SEXPR,l);
   l=lexeme_courant();
-  e = ss_expression(l,&A3);
-  *A1 = creer_noeud(A_PRG,A2,A3)
+  e = ss_expression(l,A2,A1);
   ERR(e,ERR_SEXPR,l);
   return NOERR;
 }
 
-static err_syntax ss_expression(Lexeme l, Ast * A1){
+static err_syntax ss_expression(Lexeme l, Ast * A2, Ast A1){
   err_syntax e = NOERR;
-  Ast A2,A3;
+  Ast A3,A4;
   /* Cas epsilon */
   if (l.nature != FIN_EXPR){
-    *A1 = NULL;
+    *A2 = A1;
     return NOERR;
   }
 
   /* Cas suite d'expression */
   AVNC(l);
-  e = expression(l,&A2);
+  e = expression(l,&A3);
   ERR(e,ERR_SSEXPR,l);
+  A4 = creer_noeud(A_PRG,A1,A3);
+  
   l = lexeme_courant();
-  e = ss_expression(l,&A3);
+  e = ss_expression(l,A2,A4);
   ERR(e,ERR_SSEXPR,l);
 
-  if (*A2 != NULL )
-    *A1 = creer_noeud(A_PRG,A2,A3);
   return NOERR;
 }
 
@@ -216,11 +218,11 @@ static err_syntax expression (Lexeme l,Ast* A1){
     ERR(e,ERR_EXPR,l);
     break;
   case IF:
-    e=condition(l,NULL);
+    e=condition(l,A1);
     ERR(e,ERR_EXPR,l);
     break;
   default:
-    e=operation(l,NULL);
+    e=operation(l,A1);
     ERR(e,ERR_EXPR,l);
     break;
   }
@@ -231,75 +233,73 @@ static err_syntax expression (Lexeme l,Ast* A1){
 
 /* Definitions des affectations */
 
-static err_syntax affectation (Lexeme l, Ast* A1) {
+static err_syntax affectation (Lexeme l, Ast* A2) {
   err_syntax e = NOERR;
-  Ast A2 = NULL,A3 = NULL;
+  Ast A1;
   if (l.nature != LET )
     return ERR_LET;
   
   AVNC(l);
-  e=seq_affect(l,&A2);
+  e=seq_affect(l,&A1);
   ERR(e,ERR_AFF,l);
   l=lexeme_courant();
-  e=suite_affect(l,&A3);
+  e=suite_affect(l,A2,A1);
   ERR(e,ERR_AFF,l);
-
-  if (A3==NULL)
-    *A1 = creer_noeud(A_IN,A2,A3);
-  else
-    *A1 = A2;
   return NOERR;
 }
 
-static err_syntax suite_affect(Lexeme l,Ast* A1){
+static err_syntax suite_affect(Lexeme l,Ast* A2, Ast A1){
   err_syntax e = NOERR;
-  if (l.nature != IN )
+  Ast A3;
+  if (l.nature != IN ){
+    *A2 = A1;
     return NOERR;
+  }
   AVNC(l);
-  e=expression(l,A1);
+  e=expression(l,&A3);
   ERR(e,ERR_SAFFIN,l);
+
+  if (A3==NULL){
+    printf("C'est étrange ce qui se passe, A3 = unit ?\n");
+    *A2 = A1;
+  }
+  else
+    *A2 = creer_noeud(A_IN,A1,A3);
+  
   return NOERR;
 }
 
-static err_syntax seq_affect (Lexeme l, Ast *A1){
+static err_syntax seq_affect (Lexeme l, Ast *A2){
   err_syntax e = NOERR;
-  Ast A2 = NULL,A3 = NULL;
-  A1=A1;
-  e = affect(l,&A2);
+  Ast A1;
+  e = affect(l,&A1);
   ERR(e,ERR_SAFF,l);
   l=lexeme_courant();
-  e = ss_affect(l,&A3);
+  e = ss_affect(l,A2,A1);
   ERR(e,ERR_SAFF,l);
-
-  if (A3==NULL)
-    *A1 = A2;
-  else
-    *A1 = creer_noeud(A_AND,A2,A3);
   return NOERR;
 }
 
-static err_syntax ss_affect (Lexeme l, Ast* A1){
+static err_syntax ss_affect (Lexeme l, Ast* A2,Ast A1){
   err_syntax e = NOERR;
-  Ast A2,A3;
+  Ast A3,A4;
 
   /* Cas epsilon */
   if (l.nature != AND){
-    *A1 = NULL;
+    *A2 = A1;
     return NOERR;
   }
 
   /* Cas suite d'expression */
   AVNC(l);
-  e = affect(l,&A2);
+  e = affect(l,&A3);
   ERR(e,ERR_SSAFF,l);
+  A4 = creer_noeud(A_AND,A1,A3);
+
   l = lexeme_courant();
-  e = ss_affect(l,&A3);
+  e = ss_affect(l,A2,A4);
   ERR(e,ERR_SSAFF,l);
   
-  if (A3==NULL)
-    *A1 = A2;
-  else
-    *A1 = creer_noeud(A_AND,A2,A3);
   return NOERR;
 }
 
@@ -393,7 +393,7 @@ static err_syntax operation (Lexeme l ,Ast* A1) {
   return NOERR;
 }
 
-static err_syntax seq_terme(Lexeme l,Ast* A1){
+static err_syntax seq_terme(Lexeme l,Ast* A2){
   Ast A1;
   err_syntax e = NOERR;
   e= terme(l,&A1);
@@ -405,7 +405,7 @@ static err_syntax seq_terme(Lexeme l,Ast* A1){
 }
 
 static err_syntax ss_terme(Lexeme l,Ast* A2, Ast A1){
-  TypeOperateur Op;
+  TypeOp Op;
   Ast A3;
   Ast A4;
   err_syntax e = NOERR;
@@ -413,6 +413,7 @@ static err_syntax ss_terme(Lexeme l,Ast* A2, Ast A1){
   //lecture et construction d'un op1 on supoose ss-therme = epsilon si op faux
   e= op1(l, &Op);
   if (e != NOERR){
+    *A2=A1;
     return NOERR;
   }
 
@@ -450,7 +451,7 @@ static err_syntax seq_facteur (Lexeme l,Ast* A2){
 }
 
 static err_syntax ss_facteur (Lexeme l,Ast* A2, Ast A1) {
-  TypeOperateur Op;
+  TypeOp Op;
   Ast A3;
   Ast A4;
   err_syntax e=NOERR;
@@ -479,36 +480,43 @@ static err_syntax ss_facteur (Lexeme l,Ast* A2, Ast A1) {
 
 static err_syntax facteur  (Lexeme l,Ast* A1){
   err_syntax e = NOERR;
-  //  char is_minus = 0;
-  A1=A1;
-  if (l.nature==MOINS){
+  Ast A2;
+  bool minus = l.nature == MOINS;
+
+  if (minus){
     AVNC(l);
-    //is_minus = 1;
   }
+  
   if (l.nature == PARO){
     AVNC(l);
-    e=operation(l,NULL);
+    e=operation(l,&A2);
     ERR(e,ERR_FACTEUR,l);
     l=lexeme_courant();
     if ( l.nature != PARF){
       ERR(ERR_PARF,ERR_FACTEUR,l);
     }
     AVNC(l);
-    return NOERR;
   }
-  //Attention au minus
-  e = valeur(l,NULL);
+  else
+    e = valeur(l,&A2);
   ERR(e,ERR_FACTEUR,l);
+
+  if(minus){
+    *A1 = creer_noeud(A_OP,A2,NULL);
+    (*A1)->operateur.opAr = U_MOINS;
+  }
+  else
+    *A1 = A2;
   return NOERR;
 }
 
-static err_syntax op1 (Lexeme l,TypeOperateur*t ){
+static err_syntax op1 (Lexeme l,TypeOp*t ){
   switch (l.nature){
   case MOINS:
-    *t = N_MOINS;
+    t->opAr = N_MOINS;
     break;
   case PLUS:
-    *t = N_PLUS;
+    t->opAr = N_PLUS;
     break;
   default :
     return ERR_OP1;
@@ -517,13 +525,13 @@ static err_syntax op1 (Lexeme l,TypeOperateur*t ){
   return NOERR;
 }
 
-static err_syntax op2 (Lexeme l,TypeOperateur *t) {
+static err_syntax op2 (Lexeme l,TypeOp *t) {
   switch (l.nature){
   case MUL:
-    *t=N_MUL;
+    t->opAr=N_MUL;
     break;
   case DIV:
-    *t=N_DIV;
+    t->opAr=N_DIV;
     break;
   default :
     return ERR_OP2;
@@ -532,13 +540,13 @@ static err_syntax op2 (Lexeme l,TypeOperateur *t) {
   return NOERR;
 }
 
-static err_syntax test_op2 (Lexeme l,TypeOperateur *t) {
+static err_syntax test_op2 (Lexeme l,TypeOp *t) {
   switch (l.nature){
   case MUL:
-    *t=N_MUL;
+    t->opAr=N_MUL;
     break;
   case DIV:
-    *t=N_DIV;
+    t->opAr=N_DIV;
     break;
   default :
     return ERR_OP2;
@@ -550,29 +558,32 @@ static err_syntax test_op2 (Lexeme l,TypeOperateur *t) {
 
 static err_syntax valeur (Lexeme l, Ast* A1){
   err_syntax e = NOERR;
-  A1=A1;
   switch(l.nature){
   case NUM:
     break;
   case STRING:
     break;
   default:
-    e=identificateur(l);
+    e=identificateur(l,A1);
     if (e != NOERR){
       show_user_err(e,l);
       return ERR_VAL;
     }
     return NOERR;
   }
-  //Cas constante
+  //cas constante
+  *A1 = creer_noeud(A_VAL,NULL,NULL);
+  (*A1)->var.val = l.valeur;
+  (*A1)->var.t = l.type;
+  (*A1)->var.nom = NULL;
   AVNC(l);
   return NOERR;
 }
 
-static err_syntax identificateur(Lexeme l){
+static err_syntax identificateur(Lexeme l, Ast * A1){
   err_syntax e = NOERR;
 
-  e = nom_var(l);
+  e = nom_var(l, A1);
   ERR(e,ERR_IDF,l);
   l = lexeme_courant();
   e = seq_param(l);
@@ -643,7 +654,7 @@ static err_syntax nom_var(Lexeme l, Ast *A1){
     return ERR_NOMVAR;
   }
   *A1 = creer_noeud(A_NAME,NULL,NULL);
-  strcpy((*A1)->valeur.string, l.chaine); //Copie du nom de variable dans l'arbre
+  strcpy((*A1)->var.nom, l.chaine); //Copie du nom de variable dans l'arbre: strcpy(dest,src)
   AVNC(l);
   return NOERR;
 }
@@ -652,9 +663,7 @@ static err_syntax nom_var(Lexeme l, Ast *A1){
 
 static err_syntax condition (Lexeme l , Ast* A1 ) {
   err_syntax e=NOERR;
-  Ast Aexpr,Atrue,Afalse;
-  Ast Athen;
-  Aexpr=Atrue=Afalse=Athen;
+  Ast Aexpr,Atrue;
   if (l.nature != IF ){
     return ERR_COND;
   }
@@ -670,67 +679,65 @@ static err_syntax condition (Lexeme l , Ast* A1 ) {
   e=expression(l,&Atrue) ;
   ERR(e,ERR_COND,l);
   l=lexeme_courant();
-  e=suite_condition(l,&Afalse);
+  e=suite_condition(l,A1,Aexpr,Atrue);
   ERR(e,ERR_COND,l);
-  *Athen = creer_noeud(A_THEN,Atrue,Afalse);
-  *A1 = creer_noeud(A_IF,Aexpr,Athen);
   return NOERR;
 }
 
-static err_syntax suite_condition (Lexeme l,Ast*A1){
+//A1 = final, A2 = expr to evaluate, A3 = action if A2 = true
+static err_syntax suite_condition (Lexeme l,Ast*A1,Ast A2,Ast A3){
+  Ast A4;
+  Ast A5;
   err_syntax e=NOERR;
-  A1=A1;
-  if (l.nature!=ELSE)
+  if (l.nature!=ELSE){
+    A4 = creer_noeud(A_THEN,A3,NULL);
+    *A1 = creer_noeud(A_IF,A2,A4);
     return NOERR;
+  }
   AVNC(l);
-  e=expression(l,A1);
+  e=expression(l,&A5);
   ERR(e,ERR_SCOND,l);
+
+  A4 = creer_noeud(A_THEN,A3,A5);
+  *A1 = creer_noeud(A_IF,A2,A4);
   return NOERR;
 }
 
-static err_syntax seq_boolor(Lexeme l,Ast*A1){
+static err_syntax seq_boolor(Lexeme l,Ast*A2){
   err_syntax e=NOERR;
-  Ast A2,A3;
-  A2=A3=NULL;
-  e=boolor(l,A2);
+  Ast A1;
+  e=boolor(l,&A1);
   ERR(e,ERR_SBOOLEAU,l);
   l=lexeme_courant();
-  e=ss_boolor(l,A3);
+  e=ss_boolor(l,A2,A1);
   ERR(e,ERR_SBOOLEAU,l);
-
-  if (A3 == NULL)
-    *A1 = A2;
-  else{
-    *A1 = creer_noeud(A_LOG,A2,A3);
-    (*A1)->operateur.opLog = N_OR;
-  }
+  
   return NOERR;
 }
 
-static err_syntax ss_boolor(Lexeme l, Ast* A1){
+static err_syntax ss_boolor(Lexeme l, Ast* A2,Ast A1){
   err_syntax e=NOERR;
-  Ast A2 = NULL, A3 = NULL;
+  Ast A3,A4;
   if(l.nature!=LOGIC_OR){
+    *A2 = A1;
     return NOERR;
   }
   AVNC(l);
-  e= boolor(l, &A2);
+
+  e= boolor(l, &A3);
   ERR(e,ERR_SSBOOLEAU,l);
+  A4 = creer_noeud(A_LOG,A1,A3);
+  A4->operateur.opLog = N_OR;
+  
   l=lexeme_courant();
-  e=ss_boolor(l, &A3);
+  e=ss_boolor(l,A2,A4);
   ERR(e,ERR_SSBOOLEAU,l);
-  if (A3 == NULL)
-    *A1 = A2;
-  else{
-    *A1 = creer_noeud(A_LOG,A2,A3);
-    (*A1)->operateur.opLog = N_OR;
-  }
   return NOERR;
 }
 
 static err_syntax boolor(Lexeme l, Ast *A1){
   err_syntax e=NOERR;
-  Ast A2 = NULL;
+  Ast A2;
   bool not = l.nature == NOT;
   if (not){
     AVNC(l);
@@ -739,7 +746,7 @@ static err_syntax boolor(Lexeme l, Ast *A1){
   ERR(e,ERR_BOOLEAU,l);
 
   if (not){
-    *A1 = creer_noeud(OP_LOG,A2,NULL);
+    *A1 = creer_noeud(A_LOG,A2,NULL);
     (*A1)->operateur.opLog = N_NOT;
   }
   else
@@ -747,54 +754,47 @@ static err_syntax boolor(Lexeme l, Ast *A1){
   return NOERR;
 }
 /* booland le parc d'attraction de tout les booléen age<99 && age >0 */
-static err_syntax seq_booland(Lexeme l,Ast*A1){
+static err_syntax seq_booland(Lexeme l,Ast*A2){
   err_syntax e=NOERR;
-  Ast A2,A3;
-  A2=A3=NULL;
-  e =booland(l,&A2);
+  Ast A1;
+  e =booland(l,&A1);
   ERR(e,ERR_SBOOLAND,l);
   l=lexeme_courant();
-  e=ss_booland(l,&A3);
+  e=ss_booland(l,A2,A1);
   ERR(e,ERR_SBOOLAND,l);
-  if (A3 == NULL)
-    *A1 = A2;
-  else{
-    *A1 = creer_noeud(A_LOG,A2,A3);
-    (*A1)->operateur.opLog = N_AND;
-  }
   return NOERR;
 }
 
-static err_syntax ss_booland(Lexeme l,Ast* A1){
+static err_syntax ss_booland(Lexeme l,Ast* A2,Ast A1){
   err_syntax e=NOERR;
-  Ast A2,A3;
-  A2=A3=NULL;
-  if(l.nature!=LOGIC_AND)
+  Ast A3,A4;
+  if(l.nature!=LOGIC_AND){
+    *A2 = A1;
     return NOERR;
-  AVNC(l);
-  e=booland(l);
-  ERR(e,ERR_SSBOOLAND,l);
-  l=lexeme_courant();
-  e=ss_booland(l);
-  ERR(e,ERR_SSBOOLAND,l);
-  if (A3 == NULL)
-    *A1 = A2;
-  else{
-    *A1 = creer_noeud(A_LOG,A2,A3);
-    (*A1)->operateur.opLog = N_AND;
   }
+  AVNC(l);
+  e=booland(l,&A3);
+  ERR(e,ERR_SSBOOLAND,l);
+
+  A4 = creer_noeud(A_LOG,A1,A3);
+  A4->operateur.opLog = N_AND;
+  
+  l=lexeme_courant();
+  e=ss_booland(l,A2,A4);
+  ERR(e,ERR_SSBOOLAND,l);
   return NOERR;
 }
 
 static err_syntax booland(Lexeme l, Ast*A1){
   err_syntax e=NOERR;
-  Ast A2 = NULL;
+  Ast A2;
   bool not = l.nature == NOT;
   if (not){
     AVNC(l);
   }
-  e=comparaison(l,&A1);
+  e=comparaison(l,&A2);
   ERR(e,ERR_BOOLAND,l);
+  
   if (not){
     *A1 = creer_noeud(A_LOG,A2,NULL);
     (*A1)->operateur.opLog = N_NOT;
@@ -806,24 +806,20 @@ static err_syntax booland(Lexeme l, Ast*A1){
 
 static err_syntax comparaison (Lexeme l , Ast *A1){
   err_syntax e=NOERR;
-  Ast A2 = NULL,A3 = NULL;
+  Ast A2;
   e=expression(l,&A2);
   ERR(e,ERR_COMP,l);
 
-  //AVNC pas approprié, expression nous amene directement sur op_compar
-  //AVNC(l);
   l=lexeme_courant();
-  e=suite_comparaison(l,&A3,A2);
+  e=suite_comparaison(l,A1,A2);
   ERR(e,ERR_SCOMP,l);
-
-  *A1 = A3;
   return NOERR;
 }
 
 static err_syntax suite_comparaison (Lexeme l , Ast *A1, Ast A2){
   err_syntax e=NOERR;
   TypeOp op;
-  Ast A3=NULL;
+  Ast A3;
   e=op_compar(l,&op);
   if (e!=NOERR){
     *A1 = A2;

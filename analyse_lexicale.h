@@ -12,6 +12,8 @@
 -- Aout 2018 - LM : version en C  
 ------------------------------------------------------------------------ */
 
+#include "tabvar.h"
+
 typedef enum {
   //Arithmetic op
   PLUS,             // +
@@ -60,25 +62,6 @@ typedef enum {
   FIN_PRG, //;;
   FIN_SEQ
 } Nature_Lexeme ;
-
-typedef union {
-  float val_f;
-  int val_i;
-  int val_b;
-  char *string;
-} Valeur;
-
-typedef enum {
-  INT,
-  FLOAT,
-  STR
-} Type;
-
-typedef struct {
-  Valeur val;
-  Type t;
-  char *nom;
-} Variable;
 
 typedef struct {
   Nature_Lexeme nature;    // nature du lexeme

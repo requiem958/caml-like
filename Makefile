@@ -13,7 +13,7 @@ test_syn: $(BUILD_REP)/test_syntaxe
 $(BUILD_REP)/test_lexeme: analyse_lexicale.o  lecture_caracteres.o  test_lexeme.o
 	$(CC) $(DEBUG) $(CFLAGS) -o $@ $^
 
-$(BUILD_REP)/test_syntaxe: analyse_lexicale.o analyse_syntaxique.o lecture_caracteres.o test_syntaxe.o ast_parcours.o ast_construction.o
+$(BUILD_REP)/test_syntaxe: analyse_lexicale.o analyse_syntaxique.o lecture_caracteres.o test_syntaxe.o ast_parcours.o ast_construction.o tabvar.o
 	$(CC) $(DEBUG) $(CFLAGS) -o $@ $^
 
 essai_ast: ast_construction.o ast_parcours.o essai_ast.o
@@ -24,7 +24,7 @@ essai_ast: ast_construction.o ast_parcours.o essai_ast.o
 lecture_caracteres.o: lecture_caracteres.c lecture_caracteres.h
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
-ast_parcours.o:ast_parcours.c ast_parcours.h type_ast.h
+ast_parcours.o:ast_parcours.c ast_parcours.h type_ast.h tabvar.h
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 ast_construction.o: ast_construction.c ast_construction.h type_ast.h
@@ -34,6 +34,9 @@ analyse_lexicale.o: analyse_lexicale.c analyse_lexicale.h lecture_caracteres.h g
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 analyse_syntaxique.o: analyse_syntaxique.c lecture_caracteres.h analyse_lexicale.h analyse_syntaxique.h ast_construction.h type_ast.h grammaire.tkt
+	$(CC) $(DEBUG) $(CFLAGS) -c $<
+
+tabvar.o: tabvar.c tabvar.h
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 #OBJ_EXEC

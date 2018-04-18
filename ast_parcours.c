@@ -1,88 +1,218 @@
-
+#ifndef AST_P_INCLUDED
+#define AST_P_INCLUDED
 #include <stdio.h>
 #include <limits.h>
+
+#include "tabvar.h"
 #include "type_ast.h"
 
-void aff_operateur(TypeOperateur op){
+#define CASEOP(op,symb)\
+ case op:\
+ printf(symb);\
+ break
+
+
+void aff_opAr(TypeOpAr op){
   switch (op) {
-  case U_MOINS:
-    printf("-");
-    break;
-  case N_PLUS:
-    printf("+") ;
-    break;
-  case N_MOINS:
-    printf("-") ;
-    break;
-  case N_MUL:
-    printf("*") ;
-    break;
-  case N_DIV:
-    printf("/");
+    CASEOP(U_MOINS,"-");
+    CASEOP(N_PLUS,"+");
+    CASEOP(N_MOINS,"-");
+    CASEOP(N_MUL,"*");
+    CASEOP(N_DIV,"/");
+  default:
+    printf("#ERR#");
     break;
   } 
 }
+void aff_opLog(TypeOpLog op){
+  switch(op){
+    CASEOP(N_AND,"&");
+    CASEOP(N_OR,"or");
+    CASEOP(N_NOT,"!");
+  default:
+    printf("#ERR#");
+    break;
+  }
+}
+
+void aff_opComp(TypeOpComp op){
+  switch(op){
+    CASEOP(N_EQ,"==");
+    CASEOP(N_NEQ,"!=");
+    CASEOP(N_GT,">");
+    CASEOP(N_LT,"<");
+    CASEOP(N_GTE,">=");
+    CASEOP(N_LTE,"<=");
+  default:
+    printf("#ERR#");
+  }
+}
 
 void afficherarbre(Ast expr) {
+  if (expr == NULL){
+    printf("()");
+    return;
+  }
   switch (expr->nature) {
-  case OPERATION:
-    aff_operateur(expr->operateur);
-    printf("(");    
-    if (expr->operateur == U_MOINS){
+  case A_PRG:
+    afficherarbre(expr->gauche);
+    printf(";\n");
+    afficherarbre(expr->droite);
+    break;
+  case A_LET:
+    afficherarbre(expr->gauche);
+    printf("<-");
+    afficherarbre(expr->droite);
+    break;
+  case A_IN:
+    printf("[ ");
+    afficherarbre(expr->gauche);
+    printf("] in {");
+    afficherarbre(expr->droite);
+    printf("}");
+    break;
+  case A_AND:
+    printf(" and ");
+    afficherarbre(expr->gauche);
+    afficherarbre(expr->droite);
+    break;
+  case A_OP:
+    aff_opAr(expr->operateur.opAr);
+    if(expr->operateur.opAr == U_MOINS)
       afficherarbre(expr->droite);
-    }
     else{
+      printf("(");
       afficherarbre(expr->gauche);
       printf(", ");
       afficherarbre(expr->droite);
-    }
+      printf(")");
+    }  
+    break;
+  case A_LOG:
+    aff_opLog(expr->operateur.opLog);
+    if(expr->operateur.opLog == N_NOT)
+      afficherarbre(expr->droite);
+    else{
+      printf("(");
+      afficherarbre(expr->gauche);
+      printf(", ");
+      afficherarbre(expr->droite);
+      printf(")");
+    }  
+    break;
+  case A_COMP:
+    aff_opLog(expr->operateur.opComp);
+    printf("(");
+    afficherarbre(expr->gauche);
+    printf(", ");
+    afficherarbre(expr->droite);
     printf(")");
-    break ;
-  case VALEUR:
-    switch(expr->t){
+    break;
+  case A_IF:
+    printf("ITE { cond(");
+    afficherarbre(expr->gauche);
+    printf("), ");
+    afficherarbre(expr->droite);
+    printf("}");
+    break;
+  case A_THEN:
+    printf("then(");
+    afficherarbre(expr->gauche);
+    printf("), else (");
+    afficherarbre(expr->droite);
+    printf(")");
+    break;
+  case A_NAME:
+    printf(expr->var.nom);
+    break;
+  case A_VAL:
+    if (expr->var.nom != NULL)
+       printf("VAR(%s =",expr->var.nom);
+    switch(expr->var.t){
     case STR:
+      printf(expr->var.val.string);
       break;
     case FLOAT:
-      printf("%lf", expr->valeur.val_f);
+      printf("%lf", expr->var.val.val_f);
       break;
     case INT:
-      printf("%d", expr->valeur.val_i);
+      printf("%d", expr->var.val.val_i);
+      break;
+    case UNIT:
+      printf("()");
+      break;
+    case BOOL:
+      printf("%s", expr->var.val.val_b ? "true" : "false");
+      break;
+    default:
+      printf("#ERR");
       break;
     }
-    break ;
+    if (expr->var.nom != NULL)
+      printf(")");
+    break;
+  default:
+    printf("WHAT");
+    break;
   }
 }
 
-float evaluation(Ast expr) {
-  switch(expr->nature){
-  case OPERATION:
-    switch(expr->operateur){
-    case N_PLUS:
-      return evaluation(expr->gauche)+evaluation(expr->droite);
-    case N_MOINS:
-      return evaluation(expr->gauche)-evaluation(expr->droite);
-    case N_MUL:
-      return evaluation(expr->gauche)*evaluation(expr->droite);
-    case N_DIV:
-      if (evaluation(expr->droite) != 0)
-	return evaluation(expr->gauche)/evaluation(expr->droite);
-      else{
-	printf("Erreur division par zéro\n");
-	return INT_MAX;
-}
-    case U_MOINS:
-      return -evaluation(expr->droite);
-    }
-  case VALEUR:
-    switch(expr->t){
-    case STR:
-      break;
-    case FLOAT:
-      return expr->valeur.val_f;
-    case INT:
-      return expr->valeur.val_i;
-    }
+Variable evaluation(Ast expr) {
+  Variable vd;
+  Variable vg;
+  if (expr == NULL){
+    vd.t = ERR;
+    return vd;
   }
-  return 0;
+  switch (expr->nature) {
+  case A_PRG:
+    evaluation(expr->gauche);
+    return evaluation(expr->droite);
+  case A_LET:
+      vd = evaluation(expr->droite);
+      vg = evaluation(expr->gauche);
+      vg.t = vd.t;
+      vg.val = vd.val;
+      /* Ajouter vd à l'environnement courant*/
+      return vd;
+  case A_IN:
+    /* Creer nouvel environnement, copie ancien*/
+    ;
+    /*Tout se passe dans la copie depuis ici*/
+    evaluation(expr->gauche);
+    vd = evaluation(expr->droite);
+    /* Detruire la copie */
+    ;
+    /*Renvoyer result final */
+    return vd;
+  case A_AND:
+    vd = evaluation(expr->droite);
+    /* Afficher v en style caml : val nom : type = valeur*/
+    ;
+    /* renvoyer la derniere à afficher */
+    return evaluation(expr->gauche);
+  case A_OP:
+    vd = evaluation(expr->droite);
+    vg = evaluation(expr->gauche);
+
+    if (vg.t != INT || vg.t != FLOAT){
+      printf("ERR : Opérande arithmétique attendue");
+      return (Variable) {.t = ERR };
+    }
+    
+    if(vd.t != vg.t){
+      printf("Mauvais type : %s au lieu de %s (selon premier arg)",type(vd),type(vg));
+      return (Variable) {.t = ERR };
+    }
+  case A_LOG:
+  case A_COMP:
+  case A_IF:
+  case A_THEN:
+  case A_NAME:
+  case A_VAL:
+  default:
+    return (Variable){.t = ERR};
+  }
 }
   
+#endif

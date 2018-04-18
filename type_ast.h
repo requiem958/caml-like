@@ -32,8 +32,7 @@ typedef struct noeud {
   TypeAst nature ;
   TypeOp operateur;
   struct noeud *gauche, *droite ;
-  Type t;
-  Valeur valeur ;
+  Variable var;
 } NoeudAst ;
 
 typedef NoeudAst *Ast ;
