@@ -157,32 +157,35 @@ void afficherarbre(Ast expr) {
   }
 }
 
-Variable evaluation(Ast expr) {
+Variable evaluation(Ast expr, MemVar *mem) {
   Variable vd;
   Variable vg;
+  MemVar mem2;
   if (expr == NULL){
     vd.t = ERR;
     return vd;
   }
   switch (expr->nature) {
   case A_PRG:
-    evaluation(expr->gauche);
-    return evaluation(expr->droite);
+    evaluation(expr->gauche, mem);
+    return evaluation(expr->droite, mem);
   case A_LET:
-      vd = evaluation(expr->droite);
-      vg = evaluation(expr->gauche);
-      vg.t = vd.t;
-      vg.val = vd.val;
-      /* Ajouter vd à l'environnement courant*/
-      return vd;
+    vd = evaluation(expr->droite,mem);
+    vg = evaluation(expr->gauche,mem);
+    vg.t = vd.t;
+    vg.val = vd.val;
+    /* Ajouter vd à l'environnement courant*/
+    ajouter_var(&vd,mem);
+    return vd;
   case A_IN:
     /* Creer nouvel environnement, copie ancien*/
-    ;
+    copie_environnement(mem,&mem2);
     /*Tout se passe dans la copie depuis ici*/
-    evaluation(expr->gauche);
-    vd = evaluation(expr->droite);
+    evaluation(expr->gauche, mem2);
+    vd = evaluation(expr->droite,mem2);
     /* Detruire la copie */
-    ;
+    mem2.taille = 0;
+    (*(&mem2)).taille = 0;
     /*Renvoyer result final */
     return vd;
   case A_AND:
