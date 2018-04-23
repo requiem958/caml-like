@@ -22,7 +22,7 @@ void aff_opAr(TypeOpAr op){
   default:
     printf("#ERR#");
     break;
-  } 
+  }
 }
 void aff_opLog(TypeOpLog op){
   switch(op){
@@ -162,16 +162,22 @@ Variable evaluation(Ast expr, MemVar *mem) {
   Variable vg;
   MemVar mem2;
   if (expr == NULL){
-    vd.t = ERR;
+    vd.t = UNIT;
     return vd;
   }
   switch (expr->nature) {
   case A_PRG:
-    evaluation(expr->gauche, mem);
-    return evaluation(expr->droite, mem);
+    vg = evaluation(expr->gauche, mem);
+    if (expr->droite == NULL){
+      /* Afficher vd en style caml : val nom : type = valeur*/      
+      printf("val %s : %s = ",vg.nom, str_type(vg.t));
+      print_value(vg);
+      return vg;
+    }
+    return evaluation(expr->droite, mem);;
   case A_LET:
-    vd = evaluation(expr->droite,mem);
-    vg = evaluation(expr->gauche,mem);
+    vd = evaluation(expr->droite,mem); //Valeur
+    vg = evaluation(expr->gauche,mem); //Nom
     vg.t = vd.t;
     vg.val = vd.val;
     /* Ajouter vd à l'environnement courant*/
@@ -179,40 +185,91 @@ Variable evaluation(Ast expr, MemVar *mem) {
     return vd;
   case A_IN:
     /* Creer nouvel environnement, copie ancien*/
-    copie_environnement(mem,&mem2);
+    copier_environnement(mem,&mem2);
     /*Tout se passe dans la copie depuis ici*/
-    evaluation(expr->gauche, mem2);
-    vd = evaluation(expr->droite,mem2);
+    evaluation(expr->gauche, &mem2);
+    vd = evaluation(expr->droite,&mem2);
     /* Detruire la copie */
     mem2.taille = 0;
-    (*(&mem2)).taille = 0;
     /*Renvoyer result final */
     return vd;
   case A_AND:
-    vd = evaluation(expr->droite);
-    /* Afficher v en style caml : val nom : type = valeur*/
-    ;
+    vd = evaluation(expr->droite,mem);
     /* renvoyer la derniere à afficher */
-    return evaluation(expr->gauche);
+    return evaluation(expr->gauche,mem);
   case A_OP:
-    vd = evaluation(expr->droite);
-    vg = evaluation(expr->gauche);
+    vd = evaluation(expr->droite,mem);
+    vg = evaluation(expr->gauche,mem);
 
     if (vg.t != INT || vg.t != FLOAT){
-      printf("ERR : Opérande arithmétique attendue");
+      printf("ERR : Opérande arithmétique attendue\n");
       return (Variable) {.t = ERR };
     }
     
     if(vd.t != vg.t){
-      printf("Mauvais type : %s au lieu de %s (selon premier arg)",type(vd),type(vg));
+      printf("Mauvais type : %s donné alors que %s attendue\n",\
+	     str_type(vd),str_type(vg));
       return (Variable) {.t = ERR };
     }
+
+    return apply_opAr(expr->operateur.opAr,vg,vd);
   case A_LOG:
+    vd = evaluation(expr->droite,mem);
+    vg = evaluation(expr->gauche,mem);
+
+    if (vg.t != BOOL){
+      printf("ERR : Opérande logique attendue\n");
+      return (Variable) {.t = ERR };
+    }
+    
+    if(vd.t != vg.t){
+      printf("Mauvais type : %s donné alors que %s attendue",\
+	     str_type(vd),str_type(vg));
+      return (Variable) {.t = ERR };
+    }
+    return apply_opLog(expr->operateur.opLog,vg,vd);
   case A_COMP:
+    vg = evaluation(expr->gauche,mem);
+    vd = evaluation(expr->droite,mem);
+    
+    if(vd.t != vg.t){
+      printf("Mauvais type : %s donné alors que %s attendue\n",\
+	     str_type(vd),str_type(vg));
+      return (Variable) {.t = ERR };
+    }
+    return apply_opComp(expr->operateur.opComp,vg,vd);
   case A_IF:
-  case A_THEN:
+    //Pour ne pas polluer l'environnement global
+    copie_environnement(mem,&mem2);
+    vg = evaluation(expr->gauche,&mem2);
+    mem2.taille = 0;
+    if (vd.t != BOOL){
+      printf("Booléen attendu au lieu de %s\n",str_type(vg));
+      return (Variable) {.t = ERR };
+    }
+
+    if (expr->droite->nature == A_THEN){
+      if(vd.val.val_b)
+	return evaluation(expr->droite->gauche,mem);
+      else
+	return evaluation(expr->droite->droite,mem);
+    }
+
+    if(vd.val.val_b)
+      return evaluation(expr->droite,mem);
+    else
+      return (Variable) {.t = UNIT };
   case A_NAME:
+    if( chercher_var(expr->var.nom, mem, &(vg.val)) != -1){
+	vg.nom = NULL;
+      return vg;
+}
+    else{
+      printf("Valeur inconnue %s\n",expr->var.nom);
+      return (Variable){.t = ERR };
+    }
   case A_VAL:
+    return expr->var;
   default:
     return (Variable){.t = ERR};
   }
