@@ -7,22 +7,22 @@
 
 Ast creer_noeud(TypeAst t, Ast opde_gauche, Ast opde_droit){
   Ast expr ;
-      expr = (Ast) malloc (sizeof(NoeudAst));
-      expr->nature = t;
-      expr->gauche = opde_gauche;
-      expr->droite = opde_droit;
-      return expr ;
+  expr = malloc (sizeof(NoeudAst));
+  expr->nature = t;
+  expr->gauche = opde_gauche;
+  expr->droite = opde_droit;
+  return expr ;
 }
 
 Ast creer_operation(TypeOp opr , Ast opde_gauche , Ast opde_droit) 
 {
-      Ast expr ;
-      expr = (Ast) malloc (sizeof(NoeudAst));
-      expr->nature = A_OP;
-      expr->operateur = opr;
-      expr->gauche = opde_gauche;
-      expr->droite = opde_droit;
-      return expr ;
+  Ast expr ;
+  expr = (Ast) malloc (sizeof(NoeudAst));
+  expr->nature = A_OP;
+  expr->operateur = opr;
+  expr->gauche = opde_gauche;
+  expr->droite = opde_droit;
+  return expr ;
 }
 
 Ast creer_valeur(Valeur val, Type t) {

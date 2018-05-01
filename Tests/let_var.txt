@@ -1,1 +1,1 @@
-let coucou = 45 in c1cb6 = coucou ;;
+let coucou = 45 in let c1cb6 = coucou ;;

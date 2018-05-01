@@ -193,7 +193,7 @@ static err_syntax ss_expression(Lexeme l, Ast * A2, Ast A1){
   Ast A3,A4;
   /* Cas epsilon */
   if (l.nature != FIN_EXPR){
-    *A2 = A1;
+    *A2 = creer_noeud(A_PRG,A1,NULL);
     return NOERR;
   }
 
@@ -560,8 +560,9 @@ static err_syntax valeur (Lexeme l, Ast* A1){
   err_syntax e = NOERR;
   switch(l.nature){
   case NUM:
-    break;
   case STRING:
+  case TRUE:
+  case FALSE:
     break;
   default:
     e=identificateur(l,A1);
@@ -575,7 +576,7 @@ static err_syntax valeur (Lexeme l, Ast* A1){
   *A1 = creer_noeud(A_VAL,NULL,NULL);
   (*A1)->var.val = l.valeur;
   (*A1)->var.t = l.type;
-  (*A1)->var.nom = NULL;
+  (*A1)->var.nom[0] = '\0';
   AVNC(l);
   return NOERR;
 }
@@ -654,7 +655,7 @@ static err_syntax nom_var(Lexeme l, Ast *A1){
     return ERR_NOMVAR;
   }
   *A1 = creer_noeud(A_NAME,NULL,NULL);
-  strcpy((*A1)->var.nom, l.chaine); //Copie du nom de variable dans l'arbre: strcpy(dest,src)
+  strncpy((*A1)->var.nom, l.chaine,49); //Copie du nom de variable dans l'arbre: strcpy(dest,src)
   AVNC(l);
   return NOERR;
 }

@@ -2,7 +2,7 @@
 #define AST_P_INCLUDED
 #include <stdio.h>
 #include <limits.h>
-
+#include <string.h>
 #include "tabvar.h"
 #include "type_ast.h"
 
@@ -24,6 +24,81 @@ void aff_opAr(TypeOpAr op){
     break;
   }
 }
+
+static Variable  apply_opArF(TypeOpAr op, float v1, float v2){
+  Variable ret;
+  ret.t = FLOAT;
+  ret.nom[0] = 0;
+  switch(op){
+  case U_MOINS:
+    ret.val.val_f = - v1;
+    break;
+  case N_PLUS:
+    ret.val.val_f = v1 + v2;
+    break;
+  case N_MOINS:
+    ret.val.val_f = v1 - v2;
+    break;
+  case N_MUL:
+    ret.val.val_f = v1 * v2;
+    break;
+  case N_DIV:
+    if (v2 != 0)
+      ret.val.val_f = v1 / v2;
+    else{
+      ret.t = ERR;
+      ret.val.val_f =0;
+      return ret;
+    }
+    break;
+  default:
+    ret.t = ERR;
+  }
+  return ret;
+}
+
+static Variable  apply_opArI(TypeOpAr op, int v1, int v2){
+  Variable ret;
+  ret.t = INT;
+  ret.nom[0] = 0;
+  switch(op){
+  case U_MOINS:
+    ret.val.val_i = - v1;
+    break;
+  case N_PLUS:
+    ret.val.val_i = v1 + v2;
+    break;
+  case N_MOINS:
+    ret.val.val_i = v1 - v2;
+    break;
+  case N_MUL:
+    ret.val.val_i = v1 * v2;
+    break;
+  case N_DIV:
+    if (v2 != 0)
+      ret.val.val_i = v1 / v2;
+    else{
+      ret.t = ERR;
+    }
+    break;
+  default:
+    ret.t = ERR;
+    return ret;
+  }
+  return ret;
+}
+
+Variable apply_opAr(TypeOpAr op,Variable v1, Variable v2){
+  switch(v1.t){
+  case INT:
+    return apply_opArI(op,v1.val.val_i,v2.val.val_i);
+  case FLOAT:
+    return apply_opArF(op,v1.val.val_f,v2.val.val_f);
+  default:
+    return (Variable) {.t = ERR };
+  }
+}
+
 void aff_opLog(TypeOpLog op){
   switch(op){
     CASEOP(N_AND,"&");
@@ -33,6 +108,26 @@ void aff_opLog(TypeOpLog op){
     printf("#ERR#");
     break;
   }
+}
+
+Variable apply_opLog(TypeOpLog op, Variable v1, Variable v2){
+  Variable ret;
+  ret.t = BOOL;
+  ret.nom[0] = 0;
+  switch(op){
+  case N_AND:
+    ret.val.val_b = v1.val.val_b && v2.val.val_b;
+    break;
+  case N_OR:
+    ret.val.val_b = v1.val.val_b || v2.val.val_b;
+    break;
+  case N_NOT:
+    ret.val.val_b = !v1.val.val_b;
+    break;
+  default:
+    ret.t = ERR;
+  }
+  return ret;
 }
 
 void aff_opComp(TypeOpComp op){
@@ -48,6 +143,77 @@ void aff_opComp(TypeOpComp op){
   }
 }
 
+static Variable  apply_opCompI(TypeOpComp op, int v1, int v2){
+  Variable ret;
+  ret.t = BOOL;
+  ret.nom[0] = 0;
+  switch(op){
+  case N_EQ:
+    ret.val.val_b = v1 == v2;
+    break;
+  case N_NEQ:
+    ret.val.val_b = v1 != v2;
+    break;
+  case N_GT:
+    ret.val.val_b = v1 > v2;
+    break;
+  case N_LT:
+    ret.val.val_b = v1 < v2;
+    break;
+  case N_GTE:
+    ret.val.val_b = v1 >= v2;
+    break;
+  case N_LTE:
+    ret.val.val_b = v1 <= v2;
+    break;
+  default:
+    ret.t = ERR;
+    return ret;
+  }
+  return ret;
+}
+
+static Variable  apply_opCompF(TypeOpComp op, float v1, float v2){
+  Variable ret;
+  ret.t = BOOL;
+  ret.nom[0] = 0;
+  switch(op){
+  case N_EQ:
+    ret.val.val_b = v1 == v2;
+    break;
+  case N_NEQ:
+    ret.val.val_b = v1 != v2;
+    break;
+  case N_GT:
+    ret.val.val_b = v1 > v2;
+    break;
+  case N_LT:
+    ret.val.val_b = v1 < v2;
+    break;
+  case N_GTE:
+    ret.val.val_b = v1 >= v2;
+    break;
+  case N_LTE:
+    ret.val.val_b = v1 <= v2;
+    break;
+  default:
+    ret.t = ERR;
+    return ret;
+  }
+  return ret;
+}
+
+
+Variable apply_opComp(TypeOpComp op, Variable v1, Variable v2){
+  switch(v1.t){
+  case INT:
+    return apply_opCompI(op,v1.val.val_i,v2.val.val_i);
+  case FLOAT:
+    return apply_opCompF(op,v1.val.val_f,v2.val.val_f);
+  default:
+    return (Variable) {.t = ERR };
+  }
+}
 void afficherarbre(Ast expr) {
   if (expr == NULL){
     printf("()");
@@ -72,9 +238,11 @@ void afficherarbre(Ast expr) {
     printf("}");
     break;
   case A_AND:
-    printf(" and ");
+    printf(" and ( ");
     afficherarbre(expr->gauche);
+    printf(" , ");
     afficherarbre(expr->droite);
+    puts(" )");
     break;
   case A_OP:
     aff_opAr(expr->operateur.opAr);
@@ -126,7 +294,7 @@ void afficherarbre(Ast expr) {
     printf(expr->var.nom);
     break;
   case A_VAL:
-    if (expr->var.nom != NULL)
+    if (expr->var.nom[0] != 0)
        printf("VAR(%s =",expr->var.nom);
     switch(expr->var.t){
     case STR:
@@ -148,7 +316,7 @@ void afficherarbre(Ast expr) {
       printf("#ERR");
       break;
     }
-    if (expr->var.nom != NULL)
+    if (expr->var.nom[0] != 0)
       printf(")");
     break;
   default:
@@ -168,24 +336,26 @@ Variable evaluation(Ast expr, MemVar *mem) {
   switch (expr->nature) {
   case A_PRG:
     vg = evaluation(expr->gauche, mem);
-    if (expr->droite == NULL){
-      /* Afficher vd en style caml : val nom : type = valeur*/      
+    vd = evaluation(expr->droite, mem);
+    /* Afficher vg vd en style caml : val nom : type = valeur*/
+    if (vd.t == UNIT){
       printf("val %s : %s = ",vg.nom, str_type(vg.t));
       print_value(vg);
+      puts("");
       return vg;
     }
-    return evaluation(expr->droite, mem);;
+    return vd;
   case A_LET:
     vd = evaluation(expr->droite,mem); //Valeur
-    vg = evaluation(expr->gauche,mem); //Nom
+    strcpy(vg.nom, expr->gauche->var.nom);
     vg.t = vd.t;
     vg.val = vd.val;
     /* Ajouter vd à l'environnement courant*/
-    ajouter_var(&vd,mem);
-    return vd;
+    ajouter_var(&vg,mem);
+    return vg;
   case A_IN:
     /* Creer nouvel environnement, copie ancien*/
-    copier_environnement(mem,&mem2);
+    copie_environnement(mem,&mem2);
     /*Tout se passe dans la copie depuis ici*/
     evaluation(expr->gauche, &mem2);
     vd = evaluation(expr->droite,&mem2);
@@ -194,21 +364,25 @@ Variable evaluation(Ast expr, MemVar *mem) {
     /*Renvoyer result final */
     return vd;
   case A_AND:
-    vd = evaluation(expr->droite,mem);
+    vg = evaluation(expr->gauche,mem);
+
+    printf("val %s : %s = ",vg.nom, str_type(vg.t));
+    print_value(vg);
+    puts("");
     /* renvoyer la derniere à afficher */
-    return evaluation(expr->gauche,mem);
+    return evaluation(expr->droite,mem);
   case A_OP:
     vd = evaluation(expr->droite,mem);
     vg = evaluation(expr->gauche,mem);
 
-    if (vg.t != INT || vg.t != FLOAT){
+    if (vg.t != INT && vg.t != FLOAT){
       printf("ERR : Opérande arithmétique attendue\n");
       return (Variable) {.t = ERR };
     }
     
     if(vd.t != vg.t){
       printf("Mauvais type : %s donné alors que %s attendue\n",\
-	     str_type(vd),str_type(vg));
+	     str_type(vd.t),str_type(vg.t));
       return (Variable) {.t = ERR };
     }
 
@@ -224,7 +398,7 @@ Variable evaluation(Ast expr, MemVar *mem) {
     
     if(vd.t != vg.t){
       printf("Mauvais type : %s donné alors que %s attendue",\
-	     str_type(vd),str_type(vg));
+	     str_type(vd.t),str_type(vg.t));
       return (Variable) {.t = ERR };
     }
     return apply_opLog(expr->operateur.opLog,vg,vd);
@@ -233,8 +407,8 @@ Variable evaluation(Ast expr, MemVar *mem) {
     vd = evaluation(expr->droite,mem);
     
     if(vd.t != vg.t){
-      printf("Mauvais type : %s donné alors que %s attendue\n",\
-	     str_type(vd),str_type(vg));
+      printf("Mauvais type : %s donn� alors que %s attendue\n",\
+	     str_type(vd.t),str_type(vg.t));
       return (Variable) {.t = ERR };
     }
     return apply_opComp(expr->operateur.opComp,vg,vd);
@@ -244,7 +418,7 @@ Variable evaluation(Ast expr, MemVar *mem) {
     vg = evaluation(expr->gauche,&mem2);
     mem2.taille = 0;
     if (vd.t != BOOL){
-      printf("Booléen attendu au lieu de %s\n",str_type(vg));
+      printf("Bool�en attendu au lieu de %s\n",str_type(vg.t));
       return (Variable) {.t = ERR };
     }
 
@@ -260,8 +434,8 @@ Variable evaluation(Ast expr, MemVar *mem) {
     else
       return (Variable) {.t = UNIT };
   case A_NAME:
-    if( chercher_var(expr->var.nom, mem, &(vg.val)) != -1){
-	vg.nom = NULL;
+    if( chercher_var(expr->var.nom, mem, &vg) != -1){
+	vg.nom[0] = 0;
       return vg;
 }
     else{

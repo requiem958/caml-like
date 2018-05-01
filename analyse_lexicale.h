@@ -25,6 +25,8 @@ typedef enum {
   LOGIC_AND,//&
   LOGIC_OR,//or
   NOT,//!
+  TRUE,
+  FALSE,
   
   //Comparison ops
   EQUALITY,

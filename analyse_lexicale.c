@@ -244,7 +244,7 @@ void reconnaitre_lexeme() {
       }
       break ;
     case E_SYMB:
-      lire_symb();
+      lire_symb();;
       etat = E_FIN;
       break;
     case E_STRING:
@@ -284,6 +284,14 @@ void reconnaitre_lexeme() {
       break;
     case E_CAR:
       lexeme_en_cours.nature = identificateur(lexeme_en_cours.chaine);;
+      if (lexeme_en_cours.nature == TRUE){
+	lexeme_en_cours.type = BOOL;
+	lexeme_en_cours.valeur.val_b = true;
+      }
+      else if (lexeme_en_cours.nature == FALSE){
+	lexeme_en_cours.type = BOOL;
+	lexeme_en_cours.valeur.val_b = false;
+      }
       etat = E_FIN;
       break;
     case E_FIN:
@@ -325,6 +333,10 @@ Nature_Lexeme identificateur(char *chaine){
 	 return THEN;
   else IF_IDF("else")
 	 return ELSE;
+  else IF_IDF("true")
+	 return TRUE;
+  else IF_IDF("false")
+	 return FALSE;
   else
     return VAR;
 }
@@ -436,6 +448,8 @@ char *Nature_vers_Chaine (Nature_Lexeme nature) {
     LEX_NAT_CHN(LOGIC_AND);
     LEX_NAT_CHN(LOGIC_OR);
     LEX_NAT_CHN(NOT);
+    LEX_NAT_CHN(TRUE);
+    LEX_NAT_CHN(FALSE);
   
     //Comparison ops
     LEX_NAT_CHN(EQUALITY);

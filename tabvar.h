@@ -23,7 +23,7 @@ typedef enum {
 typedef struct {
   Valeur val;
   Type t;
-  char *nom;
+  char nom[50];
 } Variable;
 
 typedef struct {
@@ -35,9 +35,12 @@ char* type(Variable v);
 
 int ajouter_var (Variable *w,MemVar *m);
 
-int chercher_var (char *var,MemVar *m,Valeur *res);
+int chercher_var (char *var,MemVar *m,Variable *res);
 
-void copie_environement (MemVar *m ,MemVar *m2);
+void copie_environnement (MemVar *m ,MemVar *m2);
+
+char *str_type(Type t);
+void print_value(Variable v);
 
 
 #endif

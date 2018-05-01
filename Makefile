@@ -45,7 +45,7 @@ tabvar.o: tabvar.c tabvar.h
 test_lexeme.o: test_lexeme.c analyse_lexicale.h 
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
-test_syntaxe.o: test_syntaxe.c analyse_syntaxique.h analyse_lexicale.h lecture_caracteres.h ast_parcours.h ast_construction.h type_ast.h
+test_syntaxe.o: test_syntaxe.c analyse_syntaxique.h analyse_lexicale.h lecture_caracteres.h ast_parcours.h ast_construction.h type_ast.h tabvar.h
 	$(CC) $(DEBUG) $(CFLAGS) -c $<
 
 essai_ast.o: essai_ast.c ast_construction.h ast_parcours.h type_ast.h
