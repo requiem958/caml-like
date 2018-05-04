@@ -140,13 +140,6 @@ seq_booland	-> booland ss_booland
 ss_booland	-> eps
 		-> op2log booland ss_booland
 
-booland		-> valeur
-		-> NOT valeur
-		-> comparaison
-		-> NOT comparaison
-comparaison	-> PARO exp op_compar exp PARF
-
-/* option
 boland -> NOT comparaison
 	-> comparaison
 
@@ -154,7 +147,7 @@ comparaison-> expression suitecomparaison
 
 suitecomparaison -> op_compar expression
 		-> eps
-		*/
+		
 
 //Opérateurs d'expression logiques
 op1log	     -> LOGIC_OR
