@@ -33,6 +33,8 @@ void print_value(Variable v){
   case STR:
     printf("%s",v.val.string);
     break;
+  case UNIT:
+    printf("()");break;
   default:
     printf("#ERRINVALUE");
   }

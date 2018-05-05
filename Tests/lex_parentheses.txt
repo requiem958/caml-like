@@ -1,2 +1,1 @@
-(())
-(* () (*)*)*)
+let a (* ceci est un echec de commentaire =5;;

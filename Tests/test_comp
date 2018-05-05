@@ -1,0 +1,2 @@
+let a=3 in if a==3 & a<4 then let b= 1 else let b = 2;
+let b = let a = 3 in if a == 3 then 11 else 21;;

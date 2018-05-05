@@ -267,7 +267,6 @@ void reconnaitre_lexeme() {
 	  lexeme_en_cours.valeur.val_f=lexeme_en_cours.valeur.val_i;
 	  etat=E_FLOAT;
 	}
-	avancer_car();
       }
       break;
     case E_FLOAT:
@@ -376,10 +375,10 @@ Nature_Lexeme symb_to_lex(char *chaine){
 	 return LOWER_OR_EQUAL;
   else IF_IDF("!=")
 	 return INEQUALITY;
-  else IF_IDF(";")
-	 return FIN_EXPR;
   else IF_IDF(";;")
 	 return FIN_PRG;
+  else IF_IDF(";")
+	 return FIN_EXPR;
   else
     return ERREUR;
 }

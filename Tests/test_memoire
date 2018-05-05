@@ -1,0 +1,6 @@
+let a=5; 
+let b=3; 
+let c=7;
+let s="coucou";
+let w = true;
+let x= 5.3;

@@ -102,7 +102,7 @@ static err_syntax nocomment (Lexeme l);
 //fonction preprocesseur permetant de raccourcir drastiquement le code ,point virgule à ajouter lors de l'appel
 #define AVNC(x) 	do{			\
     avancer();					\
-    l=lexeme_courant();				\
+    l=lexeme_courant(); 		\
     if (nocomment (x)!=NOERR)			\
       return ERR_COMM ;				\
     l=lexeme_courant();				\
@@ -212,6 +212,7 @@ static err_syntax ss_expression(Lexeme l, Ast * A2, Ast A1){
 
 static err_syntax expression (Lexeme l,Ast* A1){
   err_syntax e=NOERR;
+
   switch (l.nature) {
   case LET:
     e=affectation(l,A1);

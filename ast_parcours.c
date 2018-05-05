@@ -336,14 +336,16 @@ Variable evaluation(Ast expr, MemVar *mem) {
   switch (expr->nature) {
   case A_PRG:
     vg = evaluation(expr->gauche, mem);
-    vd = evaluation(expr->droite, mem);
-    /* Afficher vg vd en style caml : val nom : type = valeur*/
-    if (vd.t == UNIT){
-      printf("val %s : %s = ",vg.nom, str_type(vg.t));
+       printf("val %s : %s = ",vg.nom, str_type(vg.t));
       print_value(vg);
       puts("");
-      return vg;
-    }
+    vd = evaluation(expr->droite, mem);
+    /* Afficher vg vd en style caml : val nom : type = valeur*/
+   if (vd.t == UNIT)
+     return vg;
+   /* printf("val %s : %s = ",vd.nom, str_type(vd.t));
+      print_value(vd);
+      puts("");*/
     return vd;
   case A_LET:
     vd = evaluation(expr->droite,mem); //Valeur
@@ -376,13 +378,14 @@ Variable evaluation(Ast expr, MemVar *mem) {
     vg = evaluation(expr->gauche,mem);
 
     if (vg.t != INT && vg.t != FLOAT){
-      printf("ERR : Opérande arithmétique attendue\n");
+      printf("ERR : Opérande arithmétique attendue");
+          puts("");
       return (Variable) {.t = ERR };
     }
     
     if(vd.t != vg.t){
-      printf("Mauvais type : %s donné alors que %s attendue\n",\
-	     str_type(vd.t),str_type(vg.t));
+      printf("Mauvais type : %s donné alors que %s attendue",\
+	     str_type(vd.t),str_type(vg.t));    puts("");
       return (Variable) {.t = ERR };
     }
 
@@ -392,13 +395,15 @@ Variable evaluation(Ast expr, MemVar *mem) {
     vg = evaluation(expr->gauche,mem);
 
     if (vg.t != BOOL){
-      printf("ERR : Opérande logique attendue\n");
+      printf("ERR : Opérande logique attendue");
+          puts("");
       return (Variable) {.t = ERR };
     }
     
     if(vd.t != vg.t){
       printf("Mauvais type : %s donné alors que %s attendue",\
 	     str_type(vd.t),str_type(vg.t));
+          puts("");
       return (Variable) {.t = ERR };
     }
     return apply_opLog(expr->operateur.opLog,vg,vd);
@@ -407,8 +412,9 @@ Variable evaluation(Ast expr, MemVar *mem) {
     vd = evaluation(expr->droite,mem);
     
     if(vd.t != vg.t){
-      printf("Mauvais type : %s donn� alors que %s attendue\n",\
+      printf("Mauvais type : %s donn� alors que %s attendue",\
 	     str_type(vd.t),str_type(vg.t));
+          puts("");
       return (Variable) {.t = ERR };
     }
     return apply_opComp(expr->operateur.opComp,vg,vd);
@@ -417,13 +423,14 @@ Variable evaluation(Ast expr, MemVar *mem) {
     copie_environnement(mem,&mem2);
     vg = evaluation(expr->gauche,&mem2);
     mem2.taille = 0;
-    if (vd.t != BOOL){
-      printf("Bool�en attendu au lieu de %s\n",str_type(vg.t));
+    if (vg.t != BOOL){
+      printf("Bool�en   attendu au lieu de %s",str_type(vg.t));
+          puts("");
       return (Variable) {.t = ERR };
     }
 
     if (expr->droite->nature == A_THEN){
-      if(vd.val.val_b)
+      if(vg.val.val_b)
 	return evaluation(expr->droite->gauche,mem);
       else
 	return evaluation(expr->droite->droite,mem);
@@ -439,7 +446,7 @@ Variable evaluation(Ast expr, MemVar *mem) {
       return vg;
 }
     else{
-      printf("Valeur inconnue %s\n",expr->var.nom);
+      printf("Valeur inconnue %s",expr->var.nom);    puts("");
       return (Variable){.t = ERR };
     }
   case A_VAL:
